@@ -1,21 +1,18 @@
 # Resumo diário — conversas Telegram
 
-Data/hora da coleta: 2026-02-13 06:00 (America/Sao_Paulo)
+Data/hora da coleta: 2026-02-13 12:00 (America/Sao_Paulo)
 Sessão analisada: `agent:main:main` (origem Telegram `telegram:8004185123`)
 
 ## Principais decisões
-- Seguir execução contínua do projeto sem pedir confirmação a cada passo, com autonomia operacional para deixar tudo pronto e funcional.
-- Trabalhar em modo passo a passo, porém com entrega prática (fazer e avançar), não só orientação.
-- Manter checkpoints curtos de progresso quando solicitado (ex.: “Me atualiza”).
+- Manter execução contínua de ponta a ponta, sem pausar para microconfirmações.
+- Avançar no bloco web com foco em entregar fluxo funcional completo (Serviços, Pacotes, Saldos/Consumos).
 
 ## Tarefas abertas
-- Continuar o próximo bloco já alinhado na conversa:
-  - Tela web de **Serviços** integrada à API (listar/criar/editar).
-  - Tela web de **Pacotes** (listar/criar/vender).
-  - Tela web de **Saldos/Consumos** por cliente.
-- Enviar novo checkpoint quando esse bloco estiver concluído.
+- Finalizar polimento ponta a ponta do fluxo web (agenda + clientes + integrações finais).
+- Refinar UX para reduzir entradas manuais e fechar o fluxo completo de pacotes/saldos/consumos.
+- Enviar novo checkpoint curto após o próximo bloco concluído.
 
 ## Preferências do usuário observadas
-- Prefere que o agente **execute direto** e reduza perguntas de permissão durante implementação.
-- Prefere condução **passo a passo**, com pragmatismo.
-- Gosta de **atualizações objetivas** de status/progresso.
+- Prefere delegação total na execução (“tudo faça”, “pode fazer”), com autonomia alta.
+- Quer checkpoints curtos e objetivos durante a execução.
+- Mantém preferência por condução prática e direta ao ponto.
