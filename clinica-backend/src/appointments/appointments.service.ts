@@ -209,6 +209,7 @@ export class AppointmentsService {
   async checkAndCreate(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
     const startsAt = new Date(dto.startsAt);
     const endsAt = new Date(dto.endsAt);
+    const bufferMinutes = Number(process.env.APPOINTMENT_BUFFER_MINUTES ?? '10');
 
     if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
       throw new BadRequestException('Data/hora inválida para agendamento');
@@ -216,24 +217,51 @@ export class AppointmentsService {
     if (endsAt <= startsAt) {
       throw new BadRequestException('Horário final deve ser maior que horário inicial');
     }
+    if (!Number.isFinite(bufferMinutes) || bufferMinutes < 0 || bufferMinutes > 180) {
+      throw new BadRequestException('APPOINTMENT_BUFFER_MINUTES inválido (use 0-180)');
+    }
+
+    const conflictStart = new Date(startsAt.getTime() - bufferMinutes * 60000);
+    const conflictEnd = new Date(endsAt.getTime() + bufferMinutes * 60000);
+
+    const statusFilter = { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] as AppointmentStatus[] };
 
     if (dto.professionalId) {
-      const conflict = await this.prisma.appointment.findFirst({
+      const professionalConflict = await this.prisma.appointment.findFirst({
         where: {
           professionalId: dto.professionalId,
-          status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
-          startsAt: { lt: endsAt },
-          endsAt: { gt: startsAt },
+          status: statusFilter,
+          startsAt: { lt: conflictEnd },
+          endsAt: { gt: conflictStart },
         },
         select: { id: true, startsAt: true, endsAt: true, clientId: true, status: true },
       });
 
-      if (conflict) {
+      if (professionalConflict) {
         throw new ConflictException({
           message: 'Conflito de horário para o profissional',
-          conflict,
+          bufferMinutes,
+          conflict: professionalConflict,
         });
       }
+    }
+
+    const clientConflict = await this.prisma.appointment.findFirst({
+      where: {
+        clientId: dto.clientId,
+        status: statusFilter,
+        startsAt: { lt: conflictEnd },
+        endsAt: { gt: conflictStart },
+      },
+      select: { id: true, startsAt: true, endsAt: true, professionalId: true, status: true },
+    });
+
+    if (clientConflict) {
+      throw new ConflictException({
+        message: 'Cliente já possui agendamento em conflito de horário',
+        bufferMinutes,
+        conflict: clientConflict,
+      });
     }
 
     return this.create(dto, actor);
