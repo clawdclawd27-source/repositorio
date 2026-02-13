@@ -312,14 +312,16 @@ export class AppointmentsService {
       serviceId: dto.serviceId,
     });
 
+    const professionalId = dto.professionalId?.trim() || undefined;
+
     await this.validateScheduleConflicts({
       startsAt,
       endsAt,
       clientId: dto.clientId,
-      professionalId: dto.professionalId,
+      professionalId,
     });
 
-    return this.create(dto, actor);
+    return this.create({ ...dto, professionalId }, actor);
   }
 
   async reschedule(id: string, dto: RescheduleAppointmentDto, actor: { id: string; role: UserRole }) {
@@ -334,7 +336,7 @@ export class AppointmentsService {
       useServiceDuration: dto.useServiceDuration,
       serviceId: current.serviceId,
     });
-    const professionalId = dto.professionalId ?? current.professionalId ?? undefined;
+    const professionalId = dto.professionalId?.trim() || current.professionalId || undefined;
 
     await this.validateScheduleConflicts({
       startsAt,

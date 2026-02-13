@@ -85,8 +85,11 @@ export function AppointmentsPage() {
     setMsg('');
     try {
       await api.post('/appointments/check-and-create', {
-        ...form,
+        clientId: form.clientId,
+        serviceId: form.serviceId,
         startsAt: new Date(form.startsAt).toISOString(),
+        professionalId: form.professionalId.trim() || undefined,
+        notes: form.notes.trim() || undefined,
         useServiceDuration: true,
       });
       setMsg('Consulta criada com sucesso.');
