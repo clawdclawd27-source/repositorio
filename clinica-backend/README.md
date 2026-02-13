@@ -71,6 +71,8 @@ API base: `http://localhost:3000/api`
 ### Admin
 - `GET /api/permissions`
 - `POST /api/permissions` (configuração granular do OWNER por módulo)
+- `POST /api/permissions/reset-defaults` (restaura padrão)
+- `GET /api/permissions/default-json` (preset JSON para import/config)
 
 ### Cliente (portal)
 - `GET /api/portal/me`

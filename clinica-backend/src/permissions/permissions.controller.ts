@@ -21,4 +21,14 @@ export class PermissionsController {
   upsert(@Body() dto: UpsertPermissionDto) {
     return this.permissionsService.upsert(dto);
   }
+
+  @Post('reset-defaults')
+  resetDefaults() {
+    return this.permissionsService.resetDefaults();
+  }
+
+  @Get('default-json')
+  defaultJson() {
+    return this.permissionsService.exportDefaults();
+  }
 }

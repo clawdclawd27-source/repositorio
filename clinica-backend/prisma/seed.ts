@@ -1,42 +1,19 @@
 import { PrismaClient, UserRole } from '@prisma/client';
+import { buildDefaultPermission, DEFAULT_PERMISSION_MODULES } from '../src/permissions/defaults';
 
 const prisma = new PrismaClient();
 
-const modules = [
-  'dashboard',
-  'clients',
-  'appointments',
-  'services',
-  'referrals',
-  'tasks',
-  'birthdays',
-  'finance',
-  'inventory',
-  'reports',
-  'notifications',
-  'settings',
-  'audit_logs',
-  'permissions',
-];
-
 async function upsertPermission(role: UserRole, moduleKey: string) {
-  const isAdmin = role === UserRole.ADMIN;
-  const isOwner = role === UserRole.OWNER;
-
-  const canView = isAdmin || isOwner;
-  const canCreate = isAdmin || (isOwner && moduleKey !== 'permissions' && moduleKey !== 'audit_logs');
-  const canEdit = isAdmin || (isOwner && moduleKey !== 'permissions' && moduleKey !== 'audit_logs');
-  const canDelete = isAdmin;
-
+  const perm = buildDefaultPermission(role, moduleKey);
   await prisma.rolePermission.upsert({
     where: { role_moduleKey: { role, moduleKey } },
-    update: { canView, canCreate, canEdit, canDelete },
-    create: { role, moduleKey, canView, canCreate, canEdit, canDelete },
+    update: perm,
+    create: perm,
   });
 }
 
 async function main() {
-  for (const m of modules) {
+  for (const m of DEFAULT_PERMISSION_MODULES) {
     await upsertPermission(UserRole.ADMIN, m);
     await upsertPermission(UserRole.OWNER, m);
   }
