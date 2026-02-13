@@ -1,31 +1,56 @@
 import { useNavigate } from 'react-router-dom';
 
-const shortcuts = [
-  { label: 'Clientes', path: '/clientes' },
-  { label: 'Consultas', path: '/consultas' },
-  { label: 'Serviços', path: '/servicos' },
-  { label: 'Pacotes / Financeiro', path: '/financeiro' },
-  { label: 'Tarefas', path: '/tarefas' },
-  { label: 'Indicações', path: '/indicacoes' },
-  { label: 'Relatórios', path: '/relatorios' },
-  { label: 'Configurações', path: '/configuracoes' },
+type Shortcut = {
+  label: string;
+  subtitle: string;
+  cta: string;
+  path: string;
+  icon: string;
+  enabled?: boolean;
+};
+
+const shortcuts: Shortcut[] = [
+  { label: 'Clientes', subtitle: 'Cadastro, edição e contato', cta: 'Abrir', path: '/clientes', icon: '👥', enabled: true },
+  { label: 'Consultas', subtitle: 'Agenda do dia e confirmações', cta: 'Abrir', path: '/consultas', icon: '📅', enabled: true },
+  { label: 'Tarefas', subtitle: 'Pendências e prazos da equipe', cta: 'Abrir', path: '/tarefas', icon: '✅', enabled: true },
+  { label: 'Aniversários', subtitle: 'Hoje e lista do mês', cta: 'Abrir', path: '/aniversarios', icon: '🎂', enabled: true },
+  { label: 'Serviços', subtitle: 'Catálogo e preços', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
+  { label: 'Financeiro', subtitle: 'Pacotes, vendas e saldos', cta: 'Abrir', path: '/financeiro', icon: '💳', enabled: true },
+  { label: 'Estoque', subtitle: 'Produtos e consumo', cta: 'Em breve', path: '/estoque', icon: '📦', enabled: false },
+  { label: 'Relatórios', subtitle: 'Indicadores de negócio', cta: 'Em breve', path: '/relatorios', icon: '📊', enabled: false },
 ];
 
 export function DashboardPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="card" style={{ display: 'grid', gap: 14 }}>
-      <h2 style={{ margin: 0 }}>Painel rápido</h2>
-      <p style={{ margin: 0 }}>Escolha uma área para abrir:</p>
+    <div className="dashboard-wrap">
+      <section className="dashboard-header">
+        <div className="dashboard-logo">✿</div>
+        <div>
+          <h1>Clínica Emanuelle Ferreira</h1>
+          <p>Painel administrativo</p>
+        </div>
+      </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
+      <section className="dashboard-grid">
         {shortcuts.map((item) => (
-          <button key={item.path} type="button" onClick={() => navigate(item.path)}>
-            {item.label}
-          </button>
+          <article
+            key={item.path}
+            className={`dashboard-tile ${item.enabled ? 'enabled' : 'disabled'}`}
+            onClick={() => item.enabled && navigate(item.path)}
+          >
+            <div className="tile-icon">{item.icon}</div>
+            <div className="tile-content">
+              <h3>{item.label}</h3>
+              <p>{item.subtitle}</p>
+            </div>
+            <button type="button" className="tile-cta" disabled={!item.enabled}>
+              {item.cta} <span>›</span>
+            </button>
+          </article>
         ))}
-      </div>
+      </section>
     </div>
   );
 }
