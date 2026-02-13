@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
 import { WhatsAppService } from './whatsapp.service';
 
 @Injectable()
@@ -8,11 +9,25 @@ export class NotificationsService {
   constructor(
     private prisma: PrismaService,
     private whatsapp: WhatsAppService,
+    private settings: SettingsService,
   ) {}
 
   private normalizePhone(phone?: string | null) {
     if (!phone) return null;
     return phone.replace(/\D/g, '');
+  }
+
+  private applyTemplate(template: string, vars: Record<string, string>) {
+    return Object.entries(vars).reduce(
+      (acc, [k, v]) => acc.replaceAll(`{{${k}}}`, v ?? ''),
+      template,
+    );
+  }
+
+  private inAllowedWindow(startHour: number, endHour: number) {
+    const h = new Date().getHours();
+    if (startHour <= endHour) return h >= startHour && h <= endHour;
+    return h >= startHour || h <= endHour;
   }
 
   private async logMessage(input: {
@@ -53,6 +68,10 @@ export class NotificationsService {
 
   @Cron('*/10 * * * *')
   async runAppointmentsReminder() {
+    const cfg = await this.settings.getNotificationSettings();
+    if (!cfg.appointmentEnabled) return;
+    if (!this.inAllowedWindow(cfg.startHour, cfg.endHour)) return;
+
     const now = new Date();
     const stages = [
       { label: '24H', minutes: 24 * 60, tol: 10 },
@@ -77,7 +96,11 @@ export class NotificationsService {
         if (already) continue;
 
         const when = appt.startsAt.toLocaleString('pt-BR');
-        const text = `Olá ${appt.client.fullName}, lembrando sua consulta de ${appt.service.name} em ${when}.`; 
+        const text = this.applyTemplate(cfg.appointmentTemplate, {
+          clientName: appt.client.fullName,
+          serviceName: appt.service.name,
+          dateTime: when,
+        });
 
         try {
           const sent = await this.whatsapp.sendText(to, text);
@@ -98,6 +121,10 @@ export class NotificationsService {
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
   async runBirthdayReminder() {
+    const cfg = await this.settings.getNotificationSettings();
+    if (!cfg.birthdayEnabled) return;
+    if (!this.inAllowedWindow(cfg.startHour, cfg.endHour)) return;
+
     const now = new Date();
     const day = now.getDate();
     const month = now.getMonth() + 1;
@@ -115,7 +142,9 @@ export class NotificationsService {
       const already = await this.prisma.outboundMessage.findUnique({ where: { uniqueKey } });
       if (already) continue;
 
-      const text = `Feliz aniversário, ${c.fullName}! 🎉 A equipe da clínica deseja um dia incrível para você.`;
+      const text = this.applyTemplate(cfg.birthdayTemplate, {
+        clientName: c.fullName,
+      });
       try {
         const sent = await this.whatsapp.sendText(to, text);
         await this.logMessage({ uniqueKey, kind: 'BIRTHDAY', phone: to, status: 'SENT', payload: sent.payload, response: sent.data });
