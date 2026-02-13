@@ -59,6 +59,10 @@ API base: `http://localhost:3000/api`
 - `POST /api/notifications/run-appointments`
 - `POST /api/notifications/run-birthdays`
 - `GET /api/notifications/logs`
+- `GET /api/reports/financial?from=2026-02-01&to=2026-02-28`
+- `GET /api/reports/appointments?from=2026-02-01&to=2026-02-28`
+- `GET /api/reports/referrals?from=2026-02-01&to=2026-02-28`
+- `GET /api/reports/inventory`
 - `GET /api/audit-logs`
 
 ### Admin
