@@ -484,6 +484,38 @@ export class AppointmentsService {
       }
     }
 
+    // Estorna sessão automaticamente quando sai de DONE para outro status
+    if (current.status === AppointmentStatus.DONE && dto.status !== AppointmentStatus.DONE) {
+      const consumption = await this.prisma.clientPackageConsumption.findUnique({
+        where: { appointmentId: id },
+      });
+
+      if (consumption) {
+        const updatedPkg = await this.prisma.$transaction(async (tx) => {
+          const pkg = await tx.clientPackage.update({
+            where: { id: consumption.clientPackageId },
+            data: {
+              remainingSessions: { increment: 1 },
+              status: ClientPackageStatus.ACTIVE,
+            },
+          });
+
+          await tx.clientPackageConsumption.delete({ where: { appointmentId: id } });
+          return pkg;
+        });
+
+        await this.audit.log({
+          actorUserId: actor.id,
+          actorRole: actor.role,
+          action: 'REVERT_PACKAGE_SESSION_CONSUMPTION',
+          entityType: 'CLIENT_PACKAGE',
+          entityId: updatedPkg.id,
+          sourcePlatform: 'API',
+          details: { appointmentId: id, clientId: current.clientId, fromStatus: current.status, toStatus: dto.status },
+        });
+      }
+    }
+
     await this.audit.log({
       actorUserId: actor.id,
       actorRole: actor.role,
