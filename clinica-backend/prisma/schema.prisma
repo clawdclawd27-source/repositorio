@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  OWNER
+  CLIENT
+}
+
+enum ReferralStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  LOST
+}
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  phone        String?
+  passwordHash String
+  role         UserRole
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  clientsCreated Client[] @relation("CreatedClients")
+  referralsCreated Referral[] @relation("CreatedReferrals")
+  logs         AuditLog[]
+}
+
+model Client {
+  id               String     @id @default(uuid())
+  fullName         String
+  cpf              String?
+  birthDate        DateTime?
+  email            String?
+  phone            String?
+  emergencyContact String?
+  allergies        String?
+  contraindications String?
+  notes            String?
+  createdById      String?
+  createdBy        User?      @relation("CreatedClients", fields: [createdById], references: [id])
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  referralsMade    Referral[] @relation("Referrer")
+}
+
+model Referral {
+  id                String         @id @default(uuid())
+  referrerClientId  String
+  referrerClient    Client         @relation("Referrer", fields: [referrerClientId], references: [id])
+  referredName      String
+  referredPhone     String?
+  referredEmail     String?
+  status            ReferralStatus @default(NEW)
+  convertedClientId String?
+  notes             String?
+  createdById       String?
+  createdBy         User?          @relation("CreatedReferrals", fields: [createdById], references: [id])
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  actorUserId    String?
+  actorRole      UserRole?
+  actorUser      User?    @relation(fields: [actorUserId], references: [id])
+  action         String
+  entityType     String
+  entityId       String?
+  sourcePlatform String
+  details        Json?
+  createdAt      DateTime @default(now())
+}
