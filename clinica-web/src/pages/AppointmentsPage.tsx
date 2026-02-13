@@ -32,7 +32,17 @@ export function AppointmentsPage() {
 
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
-  const [form, setForm] = useState({ clientId: '', serviceId: '', startsAt: '', professionalId: '', notes: '' });
+
+  const [clientSearch, setClientSearch] = useState('');
+  const [serviceSearch, setServiceSearch] = useState('');
+
+  const [form, setForm] = useState({
+    clientId: '',
+    serviceId: '',
+    startsAt: '',
+    professionalId: '',
+    notes: '',
+  });
 
   async function load() {
     setLoading(true);
@@ -69,6 +79,18 @@ export function AppointmentsPage() {
 
   const appointments = useMemo(() => Object.values(data.grouped).flat(), [data.grouped]);
 
+  const filteredClients = useMemo(() => {
+    const q = clientSearch.trim().toLowerCase();
+    if (!q) return clients;
+    return clients.filter((c) => c.fullName.toLowerCase().includes(q));
+  }, [clients, clientSearch]);
+
+  const filteredServices = useMemo(() => {
+    const q = serviceSearch.trim().toLowerCase();
+    if (!q) return services;
+    return services.filter((s) => s.name.toLowerCase().includes(q));
+  }, [services, serviceSearch]);
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     setMsg('');
@@ -93,8 +115,8 @@ export function AppointmentsPage() {
     <div className="card" style={{ display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ margin: 0 }}>Agenda do dia</h2>
-          <small style={{ color: '#7a2e65' }}>Total: {data.total}</small>
+          <h2 style={{ margin: 0 }}>Consultas</h2>
+          <small style={{ color: '#7a2e65' }}>Agenda do dia · Total: {data.total}</small>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -105,22 +127,52 @@ export function AppointmentsPage() {
       </div>
 
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
-        <strong>Nova consulta (duração automática do serviço)</strong>
+        <strong>Nova consulta</strong>
+
+        <input
+          placeholder="Buscar cliente..."
+          value={clientSearch}
+          onChange={(e) => setClientSearch(e.target.value)}
+        />
         <select value={form.clientId} onChange={(e) => setForm((f) => ({ ...f, clientId: e.target.value }))} required>
           <option value="">Selecione cliente</option>
-          {clients.map((c) => (
-            <option key={c.id} value={c.id}>{c.fullName}</option>
+          {filteredClients.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.fullName}
+            </option>
           ))}
         </select>
+
+        <input
+          placeholder="Buscar serviço..."
+          value={serviceSearch}
+          onChange={(e) => setServiceSearch(e.target.value)}
+        />
         <select value={form.serviceId} onChange={(e) => setForm((f) => ({ ...f, serviceId: e.target.value }))} required>
           <option value="">Selecione serviço</option>
-          {services.map((s) => (
-            <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes} min)</option>
+          {filteredServices.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.durationMinutes} min)
+            </option>
           ))}
         </select>
-        <input type="datetime-local" value={form.startsAt} onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))} required />
-        <input placeholder="ID profissional (opcional)" value={form.professionalId} onChange={(e) => setForm((f) => ({ ...f, professionalId: e.target.value }))} />
-        <input placeholder="Observações" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
+
+        <input
+          type="datetime-local"
+          value={form.startsAt}
+          onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
+          required
+        />
+        <input
+          placeholder="ID profissional (opcional)"
+          value={form.professionalId}
+          onChange={(e) => setForm((f) => ({ ...f, professionalId: e.target.value }))}
+        />
+        <input
+          placeholder="Observações"
+          value={form.notes}
+          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+        />
         <button type="submit">Criar consulta</button>
       </form>
 
