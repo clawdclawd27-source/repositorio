@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
+import { AppointmentsPage } from './pages/AppointmentsPage';
 import { SectionPage } from './pages/SectionPage';
 
 export default function App() {
@@ -16,7 +17,7 @@ export default function App() {
         }
       >
         <Route path="/clientes" element={<SectionPage title="Clientes" hint="Gestão de clientes, cadastro e histórico." />} />
-        <Route path="/consultas" element={<SectionPage title="Consultas" hint="Agenda, status e acompanhamento de consultas." />} />
+        <Route path="/consultas" element={<AppointmentsPage />} />
         <Route path="/tarefas" element={<SectionPage title="Tarefas" hint="Tarefas internas da equipe e responsáveis." />} />
         <Route path="/aniversarios" element={<SectionPage title="Aniversários" hint="Lista de aniversariantes e envio automático." />} />
         <Route path="/servicos" element={<SectionPage title="Serviços" hint="Catálogo de procedimentos e duração." />} />
