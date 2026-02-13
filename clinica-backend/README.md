@@ -45,6 +45,16 @@ API base: `http://localhost:3000/api`
 - `POST /api/tasks`
 - `PATCH /api/tasks/:id`
 - `GET /api/birthdays?month=2`
+- `GET /api/finance/entries`
+- `POST /api/finance/entries`
+- `PATCH /api/finance/entries/:id`
+- `GET /api/finance/summary`
+- `GET /api/inventory/items`
+- `POST /api/inventory/items`
+- `PATCH /api/inventory/items/:id`
+- `GET /api/inventory/movements`
+- `POST /api/inventory/movements`
+- `GET /api/inventory/low-stock`
 - `GET /api/audit-logs`
 
 ### Admin

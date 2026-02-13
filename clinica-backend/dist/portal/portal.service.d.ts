@@ -10,11 +10,11 @@ export declare class PortalService {
         createdById: string | null;
         createdAt: Date;
         updatedAt: Date;
-        email: string | null;
-        phone: string | null;
         fullName: string;
         cpf: string | null;
         birthDate: Date | null;
+        email: string | null;
+        phone: string | null;
         emergencyContact: string | null;
         allergies: string | null;
         contraindications: string | null;
@@ -29,9 +29,9 @@ export declare class PortalService {
             createdAt: Date;
             updatedAt: Date;
             name: string;
+            active: boolean;
             durationMinutes: number;
             basePrice: import("@prisma/client/runtime/library").Decimal;
-            active: boolean;
         };
     } & {
         id: string;

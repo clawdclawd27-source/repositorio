@@ -9,11 +9,11 @@ export declare class ReferralsController {
             createdById: string | null;
             createdAt: Date;
             updatedAt: Date;
-            email: string | null;
-            phone: string | null;
             fullName: string;
             cpf: string | null;
             birthDate: Date | null;
+            email: string | null;
+            phone: string | null;
             emergencyContact: string | null;
             allergies: string | null;
             contraindications: string | null;

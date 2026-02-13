@@ -20,6 +20,8 @@ const portal_module_1 = require("./portal/portal.module");
 const permissions_module_1 = require("./permissions/permissions.module");
 const tasks_module_1 = require("./tasks/tasks.module");
 const birthdays_module_1 = require("./birthdays/birthdays.module");
+const finance_module_1 = require("./finance/finance.module");
+const inventory_module_1 = require("./inventory/inventory.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -38,6 +40,8 @@ exports.AppModule = AppModule = __decorate([
             permissions_module_1.PermissionsModule,
             tasks_module_1.TasksModule,
             birthdays_module_1.BirthdaysModule,
+            finance_module_1.FinanceModule,
+            inventory_module_1.InventoryModule,
         ],
     })
 ], AppModule);

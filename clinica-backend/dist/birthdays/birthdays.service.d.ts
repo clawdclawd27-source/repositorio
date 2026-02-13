@@ -6,9 +6,9 @@ export declare class BirthdaysService {
         birthMonth: number;
         birthDay: number;
         id: string;
-        email: string | null;
-        phone: string | null;
         fullName: string;
         birthDate: Date | null;
+        email: string | null;
+        phone: string | null;
     }[]>;
 }

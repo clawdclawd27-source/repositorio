@@ -11,6 +11,8 @@ import { PortalModule } from './portal/portal.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { TasksModule } from './tasks/tasks.module';
 import { BirthdaysModule } from './birthdays/birthdays.module';
+import { FinanceModule } from './finance/finance.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { BirthdaysModule } from './birthdays/birthdays.module';
     PermissionsModule,
     TasksModule,
     BirthdaysModule,
+    FinanceModule,
+    InventoryModule,
   ],
 })
 export class AppModule {}

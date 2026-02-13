@@ -12,11 +12,11 @@ export declare class AppointmentsService {
             createdById: string | null;
             createdAt: Date;
             updatedAt: Date;
-            email: string | null;
-            phone: string | null;
             fullName: string;
             cpf: string | null;
             birthDate: Date | null;
+            email: string | null;
+            phone: string | null;
             emergencyContact: string | null;
             allergies: string | null;
             contraindications: string | null;
@@ -28,9 +28,9 @@ export declare class AppointmentsService {
             createdAt: Date;
             updatedAt: Date;
             name: string;
+            active: boolean;
             durationMinutes: number;
             basePrice: import("@prisma/client/runtime/library").Decimal;
-            active: boolean;
         };
         professional: {
             id: string;
@@ -39,10 +39,10 @@ export declare class AppointmentsService {
             name: string;
             email: string;
             phone: string | null;
+            clientProfileId: string | null;
             passwordHash: string;
             role: import(".prisma/client").$Enums.UserRole;
             isActive: boolean;
-            clientProfileId: string | null;
         } | null;
     } & {
         id: string;

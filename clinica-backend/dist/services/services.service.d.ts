@@ -12,9 +12,9 @@ export declare class ServicesService {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        active: boolean;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
-        active: boolean;
     }[]>;
     create(dto: CreateServiceDto, actor: {
         id: string;
@@ -25,9 +25,9 @@ export declare class ServicesService {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        active: boolean;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
-        active: boolean;
     }>;
     update(id: string, dto: UpdateServiceDto, actor: {
         id: string;
@@ -38,8 +38,8 @@ export declare class ServicesService {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        active: boolean;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
-        active: boolean;
     }>;
 }

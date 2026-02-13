@@ -9,9 +9,9 @@ export declare class ServicesController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        active: boolean;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
-        active: boolean;
     }[]>;
     create(dto: CreateServiceDto, req: any): Promise<{
         id: string;
@@ -19,9 +19,9 @@ export declare class ServicesController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        active: boolean;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
-        active: boolean;
     }>;
     update(id: string, dto: UpdateServiceDto, req: any): Promise<{
         id: string;
@@ -29,8 +29,8 @@ export declare class ServicesController {
         createdAt: Date;
         updatedAt: Date;
         name: string;
+        active: boolean;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
-        active: boolean;
     }>;
 }
