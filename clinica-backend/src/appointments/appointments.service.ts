@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -204,6 +204,39 @@ export class AppointmentsService {
       },
       slots,
     };
+  }
+
+  async checkAndCreate(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
+    const startsAt = new Date(dto.startsAt);
+    const endsAt = new Date(dto.endsAt);
+
+    if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
+      throw new BadRequestException('Data/hora inválida para agendamento');
+    }
+    if (endsAt <= startsAt) {
+      throw new BadRequestException('Horário final deve ser maior que horário inicial');
+    }
+
+    if (dto.professionalId) {
+      const conflict = await this.prisma.appointment.findFirst({
+        where: {
+          professionalId: dto.professionalId,
+          status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
+          startsAt: { lt: endsAt },
+          endsAt: { gt: startsAt },
+        },
+        select: { id: true, startsAt: true, endsAt: true, clientId: true, status: true },
+      });
+
+      if (conflict) {
+        throw new ConflictException({
+          message: 'Conflito de horário para o profissional',
+          conflict,
+        });
+      }
+    }
+
+    return this.create(dto, actor);
   }
 
   async create(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {

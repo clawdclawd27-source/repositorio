@@ -38,6 +38,12 @@ export class AppointmentsController {
     return this.appointmentsService.list(query);
   }
 
+  @Post('check-and-create')
+  @Permission('appointments', 'create')
+  checkAndCreate(@Body() dto: CreateAppointmentDto, @Req() req: any) {
+    return this.appointmentsService.checkAndCreate(dto, req.user);
+  }
+
   @Post()
   @Permission('appointments', 'create')
   create(@Body() dto: CreateAppointmentDto, @Req() req: any) {
