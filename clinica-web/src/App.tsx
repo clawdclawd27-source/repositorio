@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PackagesPage } from './pages/PackagesPage';
 import { SectionPage } from './pages/SectionPage';
 import { ServicesPage } from './pages/ServicesPage';
+import { TasksPage } from './pages/TasksPage';
 
 export default function App() {
   return (
@@ -23,7 +24,7 @@ export default function App() {
         <Route path="/painel" element={<DashboardPage />} />
         <Route path="/clientes" element={<ClientsPage />} />
         <Route path="/consultas" element={<AppointmentsPage />} />
-        <Route path="/tarefas" element={<SectionPage title="Tarefas" hint="Tarefas internas da equipe e responsáveis." />} />
+        <Route path="/tarefas" element={<TasksPage />} />
         <Route path="/aniversarios" element={<SectionPage title="Aniversários" hint="Lista de aniversariantes e envio automático." />} />
         <Route path="/servicos" element={<ServicesPage />} />
         <Route path="/financeiro" element={<PackagesPage />} />
