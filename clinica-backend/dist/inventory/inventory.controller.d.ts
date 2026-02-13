@@ -6,8 +6,9 @@ export declare class InventoryController {
     listItems(): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -15,13 +16,13 @@ export declare class InventoryController {
         minQty: import("@prisma/client/runtime/library").Decimal;
         costPrice: import("@prisma/client/runtime/library").Decimal | null;
         salePrice: import("@prisma/client/runtime/library").Decimal | null;
-        active: boolean;
     }[]>;
     lowStock(): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -29,13 +30,13 @@ export declare class InventoryController {
         minQty: import("@prisma/client/runtime/library").Decimal;
         costPrice: import("@prisma/client/runtime/library").Decimal | null;
         salePrice: import("@prisma/client/runtime/library").Decimal | null;
-        active: boolean;
     }[]>;
     createItem(dto: CreateInventoryItemDto, req: any): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -43,13 +44,13 @@ export declare class InventoryController {
         minQty: import("@prisma/client/runtime/library").Decimal;
         costPrice: import("@prisma/client/runtime/library").Decimal | null;
         salePrice: import("@prisma/client/runtime/library").Decimal | null;
-        active: boolean;
     }>;
     updateItem(id: string, dto: UpdateInventoryItemDto, req: any): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -57,14 +58,14 @@ export declare class InventoryController {
         minQty: import("@prisma/client/runtime/library").Decimal;
         costPrice: import("@prisma/client/runtime/library").Decimal | null;
         salePrice: import("@prisma/client/runtime/library").Decimal | null;
-        active: boolean;
     }>;
     listMovements(): import(".prisma/client").Prisma.PrismaPromise<({
         item: {
             id: string;
             createdAt: Date;
-            updatedAt: Date;
             name: string;
+            updatedAt: Date;
+            active: boolean;
             sku: string | null;
             category: string | null;
             unit: string;
@@ -72,13 +73,12 @@ export declare class InventoryController {
             minQty: import("@prisma/client/runtime/library").Decimal;
             costPrice: import("@prisma/client/runtime/library").Decimal | null;
             salePrice: import("@prisma/client/runtime/library").Decimal | null;
-            active: boolean;
         };
     } & {
         id: string;
-        type: import(".prisma/client").$Enums.StockMovementType;
-        createdById: string | null;
         createdAt: Date;
+        createdById: string | null;
+        type: import(".prisma/client").$Enums.StockMovementType;
         itemId: string;
         quantity: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;
@@ -87,9 +87,9 @@ export declare class InventoryController {
     })[]>;
     addMovement(dto: CreateStockMovementDto, req: any): Promise<{
         id: string;
-        type: import(".prisma/client").$Enums.StockMovementType;
-        createdById: string | null;
         createdAt: Date;
+        createdById: string | null;
+        type: import(".prisma/client").$Enums.StockMovementType;
         itemId: string;
         quantity: import("@prisma/client/runtime/library").Decimal;
         reason: string | null;

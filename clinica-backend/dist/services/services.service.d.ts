@@ -8,38 +8,38 @@ export declare class ServicesService {
     constructor(prisma: PrismaService, audit: AuditService);
     list(): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
-        description: string | null;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
-        active: boolean;
+        updatedAt: Date;
+        description: string | null;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
+        active: boolean;
     }[]>;
     create(dto: CreateServiceDto, actor: {
         id: string;
         role: UserRole;
     }): Promise<{
         id: string;
-        description: string | null;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
-        active: boolean;
+        updatedAt: Date;
+        description: string | null;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
+        active: boolean;
     }>;
     update(id: string, dto: UpdateServiceDto, actor: {
         id: string;
         role: UserRole;
     }): Promise<{
         id: string;
-        description: string | null;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
-        active: boolean;
+        updatedAt: Date;
+        description: string | null;
         durationMinutes: number;
         basePrice: import("@prisma/client/runtime/library").Decimal;
+        active: boolean;
     }>;
 }

@@ -9,8 +9,9 @@ export declare class InventoryService {
     listItems(): Prisma.PrismaPromise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -18,13 +19,13 @@ export declare class InventoryService {
         minQty: Prisma.Decimal;
         costPrice: Prisma.Decimal | null;
         salePrice: Prisma.Decimal | null;
-        active: boolean;
     }[]>;
     lowStock(): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -32,7 +33,6 @@ export declare class InventoryService {
         minQty: Prisma.Decimal;
         costPrice: Prisma.Decimal | null;
         salePrice: Prisma.Decimal | null;
-        active: boolean;
     }[]>;
     createItem(dto: CreateInventoryItemDto, actor: {
         id: string;
@@ -40,8 +40,9 @@ export declare class InventoryService {
     }): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -49,7 +50,6 @@ export declare class InventoryService {
         minQty: Prisma.Decimal;
         costPrice: Prisma.Decimal | null;
         salePrice: Prisma.Decimal | null;
-        active: boolean;
     }>;
     updateItem(id: string, dto: UpdateInventoryItemDto, actor: {
         id: string;
@@ -57,8 +57,9 @@ export declare class InventoryService {
     }): Promise<{
         id: string;
         createdAt: Date;
-        updatedAt: Date;
         name: string;
+        updatedAt: Date;
+        active: boolean;
         sku: string | null;
         category: string | null;
         unit: string;
@@ -66,16 +67,15 @@ export declare class InventoryService {
         minQty: Prisma.Decimal;
         costPrice: Prisma.Decimal | null;
         salePrice: Prisma.Decimal | null;
-        active: boolean;
     }>;
     addMovement(dto: CreateStockMovementDto, actor: {
         id: string;
         role: UserRole;
     }): Promise<{
         id: string;
-        type: import(".prisma/client").$Enums.StockMovementType;
-        createdById: string | null;
         createdAt: Date;
+        createdById: string | null;
+        type: import(".prisma/client").$Enums.StockMovementType;
         itemId: string;
         quantity: Prisma.Decimal;
         reason: string | null;
@@ -86,8 +86,9 @@ export declare class InventoryService {
         item: {
             id: string;
             createdAt: Date;
-            updatedAt: Date;
             name: string;
+            updatedAt: Date;
+            active: boolean;
             sku: string | null;
             category: string | null;
             unit: string;
@@ -95,13 +96,12 @@ export declare class InventoryService {
             minQty: Prisma.Decimal;
             costPrice: Prisma.Decimal | null;
             salePrice: Prisma.Decimal | null;
-            active: boolean;
         };
     } & {
         id: string;
-        type: import(".prisma/client").$Enums.StockMovementType;
-        createdById: string | null;
         createdAt: Date;
+        createdById: string | null;
+        type: import(".prisma/client").$Enums.StockMovementType;
         itemId: string;
         quantity: Prisma.Decimal;
         reason: string | null;

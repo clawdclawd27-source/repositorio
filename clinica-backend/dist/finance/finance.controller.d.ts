@@ -6,31 +6,31 @@ export declare class FinanceController {
     list(): import(".prisma/client").Prisma.PrismaPromise<({
         client: {
             id: string;
-            createdById: string | null;
+            phone: string | null;
             createdAt: Date;
+            notes: string | null;
+            createdById: string | null;
             updatedAt: Date;
             fullName: string;
             cpf: string | null;
             birthDate: Date | null;
             email: string | null;
-            phone: string | null;
             emergencyContact: string | null;
             allergies: string | null;
             contraindications: string | null;
-            notes: string | null;
         } | null;
     } & {
         id: string;
-        type: import(".prisma/client").$Enums.FinancialEntryType;
         status: import(".prisma/client").$Enums.FinancialEntryStatus;
-        description: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        dueDate: Date | null;
-        paidAt: Date | null;
+        createdAt: Date;
         clientId: string | null;
         createdById: string | null;
-        createdAt: Date;
         updatedAt: Date;
+        description: string;
+        dueDate: Date | null;
+        type: import(".prisma/client").$Enums.FinancialEntryType;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidAt: Date | null;
     })[]>;
     summary(): Promise<{
         totalIncome: number;
@@ -40,28 +40,28 @@ export declare class FinanceController {
     }>;
     create(dto: CreateFinancialEntryDto, req: any): Promise<{
         id: string;
-        type: import(".prisma/client").$Enums.FinancialEntryType;
         status: import(".prisma/client").$Enums.FinancialEntryStatus;
-        description: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        dueDate: Date | null;
-        paidAt: Date | null;
+        createdAt: Date;
         clientId: string | null;
         createdById: string | null;
-        createdAt: Date;
         updatedAt: Date;
+        description: string;
+        dueDate: Date | null;
+        type: import(".prisma/client").$Enums.FinancialEntryType;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidAt: Date | null;
     }>;
     update(id: string, dto: UpdateFinancialEntryDto, req: any): Promise<{
         id: string;
-        type: import(".prisma/client").$Enums.FinancialEntryType;
         status: import(".prisma/client").$Enums.FinancialEntryStatus;
-        description: string;
-        amount: import("@prisma/client/runtime/library").Decimal;
-        dueDate: Date | null;
-        paidAt: Date | null;
+        createdAt: Date;
         clientId: string | null;
         createdById: string | null;
-        createdAt: Date;
         updatedAt: Date;
+        description: string;
+        dueDate: Date | null;
+        type: import(".prisma/client").$Enums.FinancialEntryType;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        paidAt: Date | null;
     }>;
 }

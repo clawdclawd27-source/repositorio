@@ -9,26 +9,26 @@ export declare class ReferralsService {
     list(): import(".prisma/client").Prisma.PrismaPromise<({
         referrerClient: {
             id: string;
-            createdById: string | null;
+            phone: string | null;
             createdAt: Date;
+            notes: string | null;
+            createdById: string | null;
             updatedAt: Date;
             fullName: string;
             cpf: string | null;
             birthDate: Date | null;
             email: string | null;
-            phone: string | null;
             emergencyContact: string | null;
             allergies: string | null;
             contraindications: string | null;
-            notes: string | null;
         };
     } & {
         id: string;
         status: import(".prisma/client").$Enums.ReferralStatus;
-        createdById: string | null;
         createdAt: Date;
-        updatedAt: Date;
         notes: string | null;
+        createdById: string | null;
+        updatedAt: Date;
         referrerClientId: string;
         referredName: string;
         referredPhone: string | null;
@@ -41,10 +41,10 @@ export declare class ReferralsService {
     }): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.ReferralStatus;
-        createdById: string | null;
         createdAt: Date;
-        updatedAt: Date;
         notes: string | null;
+        createdById: string | null;
+        updatedAt: Date;
         referrerClientId: string;
         referredName: string;
         referredPhone: string | null;
@@ -57,10 +57,10 @@ export declare class ReferralsService {
     }): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.ReferralStatus;
-        createdById: string | null;
         createdAt: Date;
-        updatedAt: Date;
         notes: string | null;
+        createdById: string | null;
+        updatedAt: Date;
         referrerClientId: string;
         referredName: string;
         referredPhone: string | null;

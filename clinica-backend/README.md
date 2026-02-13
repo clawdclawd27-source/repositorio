@@ -55,6 +55,10 @@ API base: `http://localhost:3000/api`
 - `GET /api/inventory/movements`
 - `POST /api/inventory/movements`
 - `GET /api/inventory/low-stock`
+- `POST /api/notifications/test-whatsapp`
+- `POST /api/notifications/run-appointments`
+- `POST /api/notifications/run-birthdays`
+- `GET /api/notifications/logs`
 - `GET /api/audit-logs`
 
 ### Admin

@@ -5,11 +5,11 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     findByEmail(email: string): import(".prisma/client").Prisma.Prisma__UserClient<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        email: string;
         phone: string | null;
+        createdAt: Date;
+        name: string;
+        updatedAt: Date;
+        email: string;
         clientProfileId: string | null;
         passwordHash: string;
         role: import(".prisma/client").$Enums.UserRole;
@@ -17,11 +17,11 @@ export declare class UsersService {
     } | null, null, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
     findById(id: string): import(".prisma/client").Prisma.Prisma__UserClient<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string;
-        email: string;
         phone: string | null;
+        createdAt: Date;
+        name: string;
+        updatedAt: Date;
+        email: string;
         clientProfileId: string | null;
         passwordHash: string;
         role: import(".prisma/client").$Enums.UserRole;
