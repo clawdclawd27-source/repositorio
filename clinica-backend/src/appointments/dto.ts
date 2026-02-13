@@ -33,6 +33,22 @@ export class UpdateAppointmentStatusDto {
   notes?: string;
 }
 
+export class RescheduleAppointmentDto {
+  @IsDateString()
+  startsAt!: string;
+
+  @IsDateString()
+  endsAt!: string;
+
+  @IsOptional()
+  @IsString()
+  professionalId?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}
+
 export class CalendarViewQueryDto {
   @IsDateString()
   date!: string;

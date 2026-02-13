@@ -11,6 +11,7 @@ import {
   CalendarViewQueryDto,
   CreateAppointmentDto,
   ListAppointmentsQueryDto,
+  RescheduleAppointmentDto,
   UpdateAppointmentStatusDto,
 } from './dto';
 
@@ -48,6 +49,12 @@ export class AppointmentsController {
   @Permission('appointments', 'create')
   create(@Body() dto: CreateAppointmentDto, @Req() req: any) {
     return this.appointmentsService.create(dto, req.user);
+  }
+
+  @Patch(':id/reschedule')
+  @Permission('appointments', 'edit')
+  reschedule(@Param('id') id: string, @Body() dto: RescheduleAppointmentDto, @Req() req: any) {
+    return this.appointmentsService.reschedule(id, dto, req.user);
   }
 
   @Patch(':id/status')

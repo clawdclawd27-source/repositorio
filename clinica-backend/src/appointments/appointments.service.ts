@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +7,7 @@ import {
   CalendarViewQueryDto,
   CreateAppointmentDto,
   ListAppointmentsQueryDto,
+  RescheduleAppointmentDto,
   UpdateAppointmentStatusDto,
 } from './dto';
 
@@ -206,33 +207,37 @@ export class AppointmentsService {
     };
   }
 
-  async checkAndCreate(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
-    const startsAt = new Date(dto.startsAt);
-    const endsAt = new Date(dto.endsAt);
+  private async validateScheduleConflicts(input: {
+    startsAt: Date;
+    endsAt: Date;
+    clientId: string;
+    professionalId?: string;
+    excludeAppointmentId?: string;
+  }) {
     const bufferMinutes = Number(process.env.APPOINTMENT_BUFFER_MINUTES ?? '10');
 
-    if (Number.isNaN(startsAt.getTime()) || Number.isNaN(endsAt.getTime())) {
+    if (Number.isNaN(input.startsAt.getTime()) || Number.isNaN(input.endsAt.getTime())) {
       throw new BadRequestException('Data/hora inválida para agendamento');
     }
-    if (endsAt <= startsAt) {
+    if (input.endsAt <= input.startsAt) {
       throw new BadRequestException('Horário final deve ser maior que horário inicial');
     }
     if (!Number.isFinite(bufferMinutes) || bufferMinutes < 0 || bufferMinutes > 180) {
       throw new BadRequestException('APPOINTMENT_BUFFER_MINUTES inválido (use 0-180)');
     }
 
-    const conflictStart = new Date(startsAt.getTime() - bufferMinutes * 60000);
-    const conflictEnd = new Date(endsAt.getTime() + bufferMinutes * 60000);
-
+    const conflictStart = new Date(input.startsAt.getTime() - bufferMinutes * 60000);
+    const conflictEnd = new Date(input.endsAt.getTime() + bufferMinutes * 60000);
     const statusFilter = { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] as AppointmentStatus[] };
 
-    if (dto.professionalId) {
+    if (input.professionalId) {
       const professionalConflict = await this.prisma.appointment.findFirst({
         where: {
-          professionalId: dto.professionalId,
+          professionalId: input.professionalId,
           status: statusFilter,
           startsAt: { lt: conflictEnd },
           endsAt: { gt: conflictStart },
+          ...(input.excludeAppointmentId ? { id: { not: input.excludeAppointmentId } } : {}),
         },
         select: { id: true, startsAt: true, endsAt: true, clientId: true, status: true },
       });
@@ -248,10 +253,11 @@ export class AppointmentsService {
 
     const clientConflict = await this.prisma.appointment.findFirst({
       where: {
-        clientId: dto.clientId,
+        clientId: input.clientId,
         status: statusFilter,
         startsAt: { lt: conflictEnd },
         endsAt: { gt: conflictStart },
+        ...(input.excludeAppointmentId ? { id: { not: input.excludeAppointmentId } } : {}),
       },
       select: { id: true, startsAt: true, endsAt: true, professionalId: true, status: true },
     });
@@ -263,8 +269,71 @@ export class AppointmentsService {
         conflict: clientConflict,
       });
     }
+  }
+
+  async checkAndCreate(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
+    const startsAt = new Date(dto.startsAt);
+    const endsAt = new Date(dto.endsAt);
+
+    await this.validateScheduleConflicts({
+      startsAt,
+      endsAt,
+      clientId: dto.clientId,
+      professionalId: dto.professionalId,
+    });
 
     return this.create(dto, actor);
+  }
+
+  async reschedule(id: string, dto: RescheduleAppointmentDto, actor: { id: string; role: UserRole }) {
+    const current = await this.prisma.appointment.findUnique({ where: { id } });
+    if (!current) {
+      throw new NotFoundException('Agendamento não encontrado');
+    }
+
+    const startsAt = new Date(dto.startsAt);
+    const endsAt = new Date(dto.endsAt);
+    const professionalId = dto.professionalId ?? current.professionalId ?? undefined;
+
+    await this.validateScheduleConflicts({
+      startsAt,
+      endsAt,
+      clientId: current.clientId,
+      professionalId,
+      excludeAppointmentId: id,
+    });
+
+    const updated = await this.prisma.appointment.update({
+      where: { id },
+      data: {
+        startsAt,
+        endsAt,
+        professionalId,
+        notes: dto.notes ?? current.notes,
+      },
+      include: {
+        client: true,
+        service: true,
+        professional: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'RESCHEDULE_APPOINTMENT',
+      entityType: 'APPOINTMENT',
+      entityId: updated.id,
+      sourcePlatform: 'API',
+      details: {
+        previousStartsAt: current.startsAt.toISOString(),
+        previousEndsAt: current.endsAt.toISOString(),
+        newStartsAt: updated.startsAt.toISOString(),
+        newEndsAt: updated.endsAt.toISOString(),
+      },
+    });
+
+    return updated;
   }
 
   async create(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
