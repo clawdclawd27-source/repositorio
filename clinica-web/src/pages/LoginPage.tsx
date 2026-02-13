@@ -22,12 +22,19 @@ export function LoginPage() {
 
   return (
     <div className="login-wrap">
-      <form className="card" onSubmit={onSubmit}>
-        <h1>Painel da Clínica</h1>
-        <input placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input placeholder="Senha" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <form className="card login-card" onSubmit={onSubmit}>
+        <h1>Clínica Estética</h1>
+        <p className="subtitle">Acesso ao painel administrativo</p>
+        <label>
+          E-mail
+          <input placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </label>
+        <label>
+          Senha
+          <input placeholder="••••••••" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
         {error && <small>{error}</small>}
-        <button type="submit">Entrar</button>
+        <button type="submit">Entrar no sistema</button>
       </form>
     </div>
   );
