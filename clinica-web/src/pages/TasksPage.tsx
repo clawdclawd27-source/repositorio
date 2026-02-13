@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
 type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
@@ -32,6 +32,8 @@ export function TasksPage() {
   const [items, setItems] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
+  const [query, setQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'ALL' | TaskStatus>('ALL');
 
   async function load() {
     setLoading(true);
@@ -49,6 +51,15 @@ export function TasksPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  const visible = useMemo(() => {
+    return items.filter((t) => {
+      const byStatus = filterStatus === 'ALL' ? true : t.status === filterStatus;
+      const haystack = `${t.title} ${t.description || ''} ${t.client?.fullName || ''}`.toLowerCase();
+      const byQuery = haystack.includes(query.trim().toLowerCase());
+      return byStatus && byQuery;
+    });
+  }, [items, query, filterStatus]);
 
   async function save(task: Task) {
     setMsg('');
@@ -72,25 +83,51 @@ export function TasksPage() {
   }
 
   return (
-    <div className="card" style={{ display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="tasks-page">
+      <div className="tasks-head card">
         <div>
-          <h2 style={{ margin: 0 }}>Tarefas</h2>
-          <small style={{ color: '#7a2e65' }}>Painel administrativo para teste e edição · Total: {items.length}</small>
+          <h2>Tarefas</h2>
+          <p>Painel administrativo para teste e edição em fluxo real.</p>
         </div>
         <button onClick={() => void load()} disabled={loading}>{loading ? 'Carregando...' : 'Atualizar lista'}</button>
       </div>
 
-      {msg ? <small>{msg}</small> : null}
+      <div className="tasks-toolbar card">
+        <input
+          placeholder="Buscar por título, descrição ou cliente"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as 'ALL' | TaskStatus)}>
+          <option value="ALL">Todos os status</option>
+          <option value="OPEN">Abertas</option>
+          <option value="IN_PROGRESS">Em andamento</option>
+          <option value="DONE">Concluídas</option>
+          <option value="CANCELLED">Canceladas</option>
+        </select>
+        <div className="tasks-counter">Exibindo {visible.length} de {items.length}</div>
+      </div>
 
-      <div style={{ display: 'grid', gap: 10 }}>
-        {items.length === 0 && !loading ? <div>Nenhuma tarefa encontrada.</div> : null}
-        {items.map((t) => (
-          <div key={t.id} style={{ border: '1px solid #f0abfc', borderRadius: 12, padding: 12, display: 'grid', gap: 8 }}>
-            <input value={t.title} onChange={(e) => updateLocal(t.id, { title: e.target.value })} />
-            <input value={t.description || ''} placeholder="Descrição" onChange={(e) => updateLocal(t.id, { description: e.target.value })} />
+      {msg ? <div className="tasks-alert">{msg}</div> : null}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+      <div className="tasks-list">
+        {visible.length === 0 && !loading ? <div className="card">Nenhuma tarefa encontrada.</div> : null}
+        {visible.map((t) => (
+          <article key={t.id} className="task-card">
+            <div className="task-top">
+              <input className="task-title" value={t.title} onChange={(e) => updateLocal(t.id, { title: e.target.value })} />
+              <div className={`task-badge status-${t.status.toLowerCase()}`}>{statusLabel[t.status]}</div>
+              <div className={`task-badge priority-${t.priority.toLowerCase()}`}>{priorityLabel[t.priority]}</div>
+            </div>
+
+            <textarea
+              className="task-description"
+              value={t.description || ''}
+              placeholder="Descrição"
+              onChange={(e) => updateLocal(t.id, { description: e.target.value })}
+            />
+
+            <div className="task-fields">
               <select value={t.status} onChange={(e) => updateLocal(t.id, { status: e.target.value as TaskStatus })}>
                 {Object.keys(statusLabel).map((v) => (
                   <option key={v} value={v}>{statusLabel[v as TaskStatus]}</option>
@@ -110,13 +147,11 @@ export function TasksPage() {
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-              <small>
-                Cliente: {t.client?.fullName || '-'} · Responsável: {t.assignedTo?.name || '-'}
-              </small>
+            <div className="task-footer">
+              <small>Cliente: {t.client?.fullName || '-'} · Responsável: {t.assignedTo?.name || '-'}</small>
               <button onClick={() => void save(t)}>Salvar edição</button>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </div>
