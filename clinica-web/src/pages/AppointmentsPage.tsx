@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
 type Appointment = {
@@ -16,6 +16,9 @@ type CalendarResponse = {
   grouped: Record<string, Appointment[]>;
 };
 
+type Client = { id: string; fullName: string };
+type Service = { id: string; name: string; durationMinutes: number };
+
 function todayISODate() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -24,7 +27,12 @@ export function AppointmentsPage() {
   const [date, setDate] = useState(todayISODate());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [msg, setMsg] = useState('');
   const [data, setData] = useState<CalendarResponse>({ total: 0, grouped: {} });
+
+  const [clients, setClients] = useState<Client[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [form, setForm] = useState({ clientId: '', serviceId: '', startsAt: '', professionalId: '', notes: '' });
 
   async function load() {
     setLoading(true);
@@ -41,12 +49,45 @@ export function AppointmentsPage() {
     }
   }
 
+  async function loadRefs() {
+    const [c, s] = await Promise.all([
+      api.get<Client[]>('/clients'),
+      api.get<{ items: Service[] }>('/services', { params: { active: true, page: 1, pageSize: 200 } }),
+    ]);
+    setClients(c.data || []);
+    setServices(s.data.items || []);
+  }
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
+  useEffect(() => {
+    void loadRefs();
+  }, []);
+
   const appointments = useMemo(() => Object.values(data.grouped).flat(), [data.grouped]);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setMsg('');
+    try {
+      await api.post('/appointments/check-and-create', {
+        ...form,
+        startsAt: new Date(form.startsAt).toISOString(),
+        useServiceDuration: true,
+      });
+      setMsg('Consulta criada com sucesso.');
+      setForm({ clientId: '', serviceId: '', startsAt: '', professionalId: '', notes: '' });
+      await load();
+    } catch (err: any) {
+      const conflictMsg = err?.response?.data?.message;
+      if (typeof conflictMsg === 'string') setMsg(conflictMsg);
+      else if (Array.isArray(conflictMsg)) setMsg(conflictMsg.join(', '));
+      else setMsg('Erro ao criar consulta');
+    }
+  }
 
   return (
     <div className="card" style={{ display: 'grid', gap: 12 }}>
@@ -63,7 +104,28 @@ export function AppointmentsPage() {
         </div>
       </div>
 
+      <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
+        <strong>Nova consulta (duração automática do serviço)</strong>
+        <select value={form.clientId} onChange={(e) => setForm((f) => ({ ...f, clientId: e.target.value }))} required>
+          <option value="">Selecione cliente</option>
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>{c.fullName}</option>
+          ))}
+        </select>
+        <select value={form.serviceId} onChange={(e) => setForm((f) => ({ ...f, serviceId: e.target.value }))} required>
+          <option value="">Selecione serviço</option>
+          {services.map((s) => (
+            <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes} min)</option>
+          ))}
+        </select>
+        <input type="datetime-local" value={form.startsAt} onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))} required />
+        <input placeholder="ID profissional (opcional)" value={form.professionalId} onChange={(e) => setForm((f) => ({ ...f, professionalId: e.target.value }))} />
+        <input placeholder="Observações" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
+        <button type="submit">Criar consulta</button>
+      </form>
+
       {error ? <small>{error}</small> : null}
+      {msg ? <small>{msg}</small> : null}
 
       <div style={{ display: 'grid', gap: 8 }}>
         {appointments.length === 0 && !loading ? <div>Nenhuma consulta neste dia.</div> : null}

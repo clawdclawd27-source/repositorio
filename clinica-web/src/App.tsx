@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
+import { ClientsPage } from './pages/ClientsPage';
 import { PackagesPage } from './pages/PackagesPage';
 import { SectionPage } from './pages/SectionPage';
 import { ServicesPage } from './pages/ServicesPage';
@@ -18,7 +19,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/clientes" element={<SectionPage title="Clientes" hint="Gestão de clientes, cadastro e histórico." />} />
+        <Route path="/clientes" element={<ClientsPage />} />
         <Route path="/consultas" element={<AppointmentsPage />} />
         <Route path="/tarefas" element={<SectionPage title="Tarefas" hint="Tarefas internas da equipe e responsáveis." />} />
         <Route path="/aniversarios" element={<SectionPage title="Aniversários" hint="Lista de aniversariantes e envio automático." />} />
