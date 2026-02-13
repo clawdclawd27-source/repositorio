@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Permission } from '../common/decorators/permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { CreateReferralDto, UpdateReferralStatusDto } from './dto';
+import { CreateReferralDto, ListReferralsQueryDto, UpdateReferralStatusDto } from './dto';
 import { ReferralsService } from './referrals.service';
 
 @Controller('referrals')
@@ -16,8 +16,8 @@ export class ReferralsController {
   @Get()
   @Roles(Role.ADMIN, Role.OWNER)
   @Permission('referrals', 'view')
-  list() {
-    return this.referralsService.list();
+  list(@Query() query: ListReferralsQueryDto) {
+    return this.referralsService.list(query);
   }
 
   @Post()

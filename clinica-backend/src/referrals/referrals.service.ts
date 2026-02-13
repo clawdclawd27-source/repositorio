@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateReferralDto, UpdateReferralStatusDto } from './dto';
+import { CreateReferralDto, ListReferralsQueryDto, UpdateReferralStatusDto } from './dto';
 
 @Injectable()
 export class ReferralsService {
@@ -11,11 +11,48 @@ export class ReferralsService {
     private audit: AuditService,
   ) {}
 
-  list() {
-    return this.prisma.referral.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { referrerClient: true },
-    });
+  async list(query: ListReferralsQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.ReferralWhereInput = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.referrerClientId ? { referrerClientId: query.referrerClientId } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { referredName: { contains: query.search, mode: 'insensitive' } },
+              { referredPhone: { contains: query.search, mode: 'insensitive' } },
+              { referredEmail: { contains: query.search, mode: 'insensitive' } },
+              {
+                referrerClient: {
+                  fullName: { contains: query.search, mode: 'insensitive' },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.referral.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: { referrerClient: true },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.referral.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   async create(dto: CreateReferralDto, actor: { id: string; role: UserRole }) {
