@@ -3,6 +3,7 @@ import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpsertPermissionDto } from './dto';
 import { buildDefaultPermission, DEFAULT_PERMISSION_MODULES } from './defaults';
+import { ImportPermissionsDto } from './import.dto';
 
 @Injectable()
 export class PermissionsService {
@@ -57,5 +58,34 @@ export class PermissionsService {
     }
 
     return { version: 1, generatedAt: new Date().toISOString(), permissions: data };
+  }
+
+  async importPermissions(input: ImportPermissionsDto) {
+    let applied = 0;
+
+    await this.prisma.$transaction(
+      input.permissions.map((p) =>
+        this.prisma.rolePermission.upsert({
+          where: { role_moduleKey: { role: p.role, moduleKey: p.moduleKey } },
+          update: {
+            canView: p.canView,
+            canCreate: p.canCreate,
+            canEdit: p.canEdit,
+            canDelete: p.canDelete,
+          },
+          create: {
+            role: p.role,
+            moduleKey: p.moduleKey,
+            canView: p.canView,
+            canCreate: p.canCreate,
+            canEdit: p.canEdit,
+            canDelete: p.canDelete,
+          },
+        }),
+      ),
+    );
+
+    applied = input.permissions.length;
+    return { ok: true, applied, version: input.version ?? 1 };
   }
 }

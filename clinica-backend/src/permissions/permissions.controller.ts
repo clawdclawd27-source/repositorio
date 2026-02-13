@@ -4,6 +4,7 @@ import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { UpsertPermissionDto } from './dto';
+import { ImportPermissionsDto } from './import.dto';
 import { PermissionsService } from './permissions.service';
 
 @Controller('permissions')
@@ -30,5 +31,10 @@ export class PermissionsController {
   @Get('default-json')
   defaultJson() {
     return this.permissionsService.exportDefaults();
+  }
+
+  @Post('import-json')
+  importJson(@Body() dto: ImportPermissionsDto) {
+    return this.permissionsService.importPermissions(dto);
   }
 }
