@@ -15,7 +15,7 @@ export function LoginPage() {
     setError('');
     try {
       await login(email, password);
-      navigate('/clientes');
+      navigate('/painel');
     } catch {
       setError('Falha no login. Verifique usuário e senha.');
     }

@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { ClientsPage } from './pages/ClientsPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { PackagesPage } from './pages/PackagesPage';
 import { SectionPage } from './pages/SectionPage';
 import { ServicesPage } from './pages/ServicesPage';
@@ -19,6 +20,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
+        <Route path="/painel" element={<DashboardPage />} />
         <Route path="/clientes" element={<ClientsPage />} />
         <Route path="/consultas" element={<AppointmentsPage />} />
         <Route path="/tarefas" element={<SectionPage title="Tarefas" hint="Tarefas internas da equipe e responsáveis." />} />
@@ -30,7 +32,7 @@ export default function App() {
         <Route path="/indicacoes" element={<SectionPage title="Indicações" hint="Indicações de clientes e taxa de conversão." />} />
         <Route path="/notificacoes" element={<SectionPage title="Notificações" hint="Logs e disparos de WhatsApp." />} />
         <Route path="/configuracoes" element={<SectionPage title="Configurações" hint="Permissões e templates do sistema." />} />
-        <Route path="*" element={<Navigate to="/clientes" replace />} />
+        <Route path="*" element={<Navigate to="/painel" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
