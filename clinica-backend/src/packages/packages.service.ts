@@ -4,6 +4,7 @@ import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateTreatmentPackageDto,
+  ListPackageConsumptionsQueryDto,
   ListPackagesQueryDto,
   SellPackageDto,
   UpdateTreatmentPackageDto,
@@ -158,5 +159,73 @@ export class PackagesService {
             : r.status,
       })),
     );
+  }
+
+  async packageConsumptionHistory(clientPackageId: string, query: ListPackageConsumptionsQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.clientPackageConsumption.findMany({
+        where: { clientPackageId },
+        include: {
+          appointment: {
+            include: {
+              client: true,
+              service: true,
+              professional: { select: { id: true, name: true, email: true } },
+            },
+          },
+          clientPackage: {
+            include: {
+              client: true,
+              package: { include: { service: true } },
+            },
+          },
+        },
+        orderBy: { consumedAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.clientPackageConsumption.count({ where: { clientPackageId } }),
+    ]);
+
+    return { items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
+  }
+
+  async clientConsumptionHistory(clientId: string, query: ListPackageConsumptionsQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.ClientPackageConsumptionWhereInput = {
+      clientPackage: { clientId },
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.clientPackageConsumption.findMany({
+        where,
+        include: {
+          appointment: {
+            include: {
+              service: true,
+              professional: { select: { id: true, name: true, email: true } },
+            },
+          },
+          clientPackage: {
+            include: {
+              package: { include: { service: true } },
+            },
+          },
+        },
+        orderBy: { consumedAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.clientPackageConsumption.count({ where }),
+    ]);
+
+    return { items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
   }
 }

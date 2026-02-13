@@ -99,3 +99,18 @@ export class ListPackagesQueryDto {
   @Max(100)
   pageSize?: number = 20;
 }
+
+export class ListPackageConsumptionsQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageSize?: number = 20;
+}

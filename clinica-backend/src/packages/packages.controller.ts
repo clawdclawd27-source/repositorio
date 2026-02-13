@@ -5,7 +5,13 @@ import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { CreateTreatmentPackageDto, ListPackagesQueryDto, SellPackageDto, UpdateTreatmentPackageDto } from './dto';
+import {
+  CreateTreatmentPackageDto,
+  ListPackageConsumptionsQueryDto,
+  ListPackagesQueryDto,
+  SellPackageDto,
+  UpdateTreatmentPackageDto,
+} from './dto';
 import { PackagesService } from './packages.service';
 
 @Controller('packages')
@@ -42,5 +48,20 @@ export class PackagesController {
   @Permission('finance', 'view')
   clientBalances(@Param('clientId') clientId: string) {
     return this.packagesService.clientBalances(clientId);
+  }
+
+  @Get('client-package/:clientPackageId/consumptions')
+  @Permission('finance', 'view')
+  packageConsumptionHistory(
+    @Param('clientPackageId') clientPackageId: string,
+    @Query() query: ListPackageConsumptionsQueryDto,
+  ) {
+    return this.packagesService.packageConsumptionHistory(clientPackageId, query);
+  }
+
+  @Get('client/:clientId/consumptions')
+  @Permission('finance', 'view')
+  clientConsumptionHistory(@Param('clientId') clientId: string, @Query() query: ListPackageConsumptionsQueryDto) {
+    return this.packagesService.clientConsumptionHistory(clientId, query);
   }
 }
