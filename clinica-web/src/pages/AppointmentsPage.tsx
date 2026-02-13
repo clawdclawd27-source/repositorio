@@ -57,12 +57,16 @@ export function AppointmentsPage() {
   }
 
   async function loadRefs() {
-    const [c, s] = await Promise.all([
-      api.get<Client[]>('/clients'),
-      api.get<{ items: Service[] } | Service[]>('/services', { params: { active: true, page: 1, pageSize: 200 } }),
-    ]);
-    setClients(c.data || []);
-    setServices(Array.isArray(s.data) ? s.data : s.data.items || []);
+    try {
+      const [c, s] = await Promise.all([
+        api.get<Client[]>('/clients'),
+        api.get<{ items: Service[] } | Service[]>('/services', { params: { active: true, page: 1, pageSize: 100 } }),
+      ]);
+      setClients(c.data || []);
+      setServices(Array.isArray(s.data) ? s.data : s.data.items || []);
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao carregar clientes/serviços');
+    }
   }
 
   useEffect(() => {
@@ -108,11 +112,13 @@ export function AppointmentsPage() {
           <button onClick={() => void load()} disabled={loading}>
             {loading ? 'Carregando...' : 'Atualizar'}
           </button>
+          <button type="button" onClick={() => void loadRefs()}>Atualizar clientes/serviços</button>
         </div>
       </div>
 
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
         <strong>Nova consulta</strong>
+        <small style={{ color: '#7a2e65' }}>Clientes: {clients.length} · Serviços: {services.length}</small>
 
         <select value={form.clientId} onChange={(e) => setForm((f) => ({ ...f, clientId: e.target.value }))} required>
           <option value="">Selecione cliente</option>

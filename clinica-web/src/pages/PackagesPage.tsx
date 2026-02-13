@@ -49,7 +49,7 @@ export function PackagesPage() {
   }
 
   async function loadServices() {
-    const { data } = await api.get('/services', { params: { active: true, page: 1, pageSize: 200 } });
+    const { data } = await api.get('/services', { params: { active: true, page: 1, pageSize: 100 } });
     setServices(Array.isArray(data) ? data : data.items || []);
   }
 
