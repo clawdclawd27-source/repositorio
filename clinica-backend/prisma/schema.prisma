@@ -58,6 +58,13 @@ enum StockMovementType {
   ADJUSTMENT
 }
 
+enum ClientPackageStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
 model User {
   id              String    @id @default(uuid())
   name            String
@@ -115,6 +122,7 @@ model Client {
   appointments      Appointment[]
   tasks             Task[]
   financialEntries  FinancialEntry[]
+  clientPackages    ClientPackage[]
 }
 
 model Service {
@@ -127,7 +135,42 @@ model Service {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  appointments    Appointment[]
+  appointments      Appointment[]
+  treatmentPackages TreatmentPackage[]
+}
+
+model TreatmentPackage {
+  id            String   @id @default(uuid())
+  name          String
+  serviceId     String
+  service       Service  @relation(fields: [serviceId], references: [id])
+  totalSessions Int
+  totalPrice    Decimal  @db.Decimal(12, 2)
+  validityDays  Int      @default(180)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  clientPackages ClientPackage[]
+}
+
+model ClientPackage {
+  id                String            @id @default(uuid())
+  clientId          String
+  packageId         String
+  status            ClientPackageStatus @default(ACTIVE)
+  totalSessions     Int
+  remainingSessions Int
+  pricePaid         Decimal?          @db.Decimal(12, 2)
+  purchasedAt       DateTime          @default(now())
+  expiresAt         DateTime?
+  notes             String?
+  createdById       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  client            Client            @relation(fields: [clientId], references: [id])
+  package           TreatmentPackage  @relation(fields: [packageId], references: [id])
 }
 
 model Appointment {
