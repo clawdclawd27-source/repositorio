@@ -20,6 +20,13 @@ export class ReferralsController {
     return this.referralsService.list(query);
   }
 
+  @Get(':id')
+  @Roles(Role.ADMIN, Role.OWNER)
+  @Permission('referrals', 'view')
+  getById(@Param('id') id: string) {
+    return this.referralsService.getById(id);
+  }
+
   @Post()
   @Roles(Role.ADMIN, Role.OWNER, Role.CLIENT)
   @Permission('referrals', 'create')

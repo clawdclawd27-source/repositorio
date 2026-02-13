@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -53,6 +53,19 @@ export class ReferralsService {
       total,
       totalPages: Math.ceil(total / pageSize),
     };
+  }
+
+  async getById(id: string) {
+    const referral = await this.prisma.referral.findUnique({
+      where: { id },
+      include: { referrerClient: true },
+    });
+
+    if (!referral) {
+      throw new NotFoundException('Indicação não encontrada');
+    }
+
+    return referral;
   }
 
   async create(dto: CreateReferralDto, actor: { id: string; role: UserRole }) {

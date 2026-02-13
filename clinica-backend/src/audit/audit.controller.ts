@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -10,6 +10,16 @@ import { ListAuditLogsQueryDto } from './dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AuditController {
   constructor(private auditService: AuditService) {}
+
+  @Get('entity/:entityType/:entityId')
+  @Roles(Role.ADMIN, Role.OWNER)
+  listByEntity(
+    @Param('entityType') entityType: string,
+    @Param('entityId') entityId: string,
+    @Query() query: ListAuditLogsQueryDto,
+  ) {
+    return this.auditService.listByEntity(entityType, entityId, query);
+  }
 
   @Get()
   @Roles(Role.ADMIN, Role.OWNER)

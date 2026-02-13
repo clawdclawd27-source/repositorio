@@ -29,6 +29,10 @@ export class AuditService {
     });
   }
 
+  async listByEntity(entityType: string, entityId: string, query: ListAuditLogsQueryDto) {
+    return this.list({ ...query, entityType, entityId });
+  }
+
   async list(query: ListAuditLogsQueryDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 50;
