@@ -7,6 +7,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   async function onSubmit(e: FormEvent) {
@@ -31,7 +32,15 @@ export function LoginPage() {
         </label>
         <label>
           Senha
-          <input placeholder="••••••••" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input placeholder="••••••••" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} />
+        </label>
+        <label className="toggle-password">
+          <input
+            type="checkbox"
+            checked={showPassword}
+            onChange={(e) => setShowPassword(e.target.checked)}
+          />
+          Mostrar senha
         </label>
         {error && <small>{error}</small>}
         <button type="submit">Entrar no sistema</button>
