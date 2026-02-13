@@ -42,8 +42,13 @@ export class RescheduleAppointmentDto {
   @IsDateString()
   startsAt!: string;
 
+  @IsOptional()
   @IsDateString()
-  endsAt!: string;
+  endsAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  useServiceDuration?: boolean;
 
   @IsOptional()
   @IsString()

@@ -83,19 +83,24 @@ export class AppointmentsService {
     return `${hh}:${mm}`;
   }
 
-  private async resolveAppointmentWindow(dto: CreateAppointmentDto) {
-    const startsAt = new Date(dto.startsAt);
+  private async resolveAppointmentWindow(input: {
+    startsAt: string;
+    endsAt?: string;
+    useServiceDuration?: boolean;
+    serviceId: string;
+  }) {
+    const startsAt = new Date(input.startsAt);
     if (Number.isNaN(startsAt.getTime())) {
       throw new BadRequestException('Data/hora inicial inválida para agendamento');
     }
 
-    if (dto.endsAt && !dto.useServiceDuration) {
-      const endsAt = new Date(dto.endsAt);
+    if (input.endsAt && !input.useServiceDuration) {
+      const endsAt = new Date(input.endsAt);
       return { startsAt, endsAt };
     }
 
     const service = await this.prisma.service.findUnique({
-      where: { id: dto.serviceId },
+      where: { id: input.serviceId },
       select: { id: true, durationMinutes: true, active: true },
     });
 
@@ -300,7 +305,12 @@ export class AppointmentsService {
   }
 
   async checkAndCreate(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
-    const { startsAt, endsAt } = await this.resolveAppointmentWindow(dto);
+    const { startsAt, endsAt } = await this.resolveAppointmentWindow({
+      startsAt: dto.startsAt,
+      endsAt: dto.endsAt,
+      useServiceDuration: dto.useServiceDuration,
+      serviceId: dto.serviceId,
+    });
 
     await this.validateScheduleConflicts({
       startsAt,
@@ -318,8 +328,12 @@ export class AppointmentsService {
       throw new NotFoundException('Agendamento não encontrado');
     }
 
-    const startsAt = new Date(dto.startsAt);
-    const endsAt = new Date(dto.endsAt);
+    const { startsAt, endsAt } = await this.resolveAppointmentWindow({
+      startsAt: dto.startsAt,
+      endsAt: dto.endsAt,
+      useServiceDuration: dto.useServiceDuration,
+      serviceId: current.serviceId,
+    });
     const professionalId = dto.professionalId ?? current.professionalId ?? undefined;
 
     await this.validateScheduleConflicts({
@@ -364,7 +378,12 @@ export class AppointmentsService {
   }
 
   async create(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
-    const { startsAt, endsAt } = await this.resolveAppointmentWindow(dto);
+    const { startsAt, endsAt } = await this.resolveAppointmentWindow({
+      startsAt: dto.startsAt,
+      endsAt: dto.endsAt,
+      useServiceDuration: dto.useServiceDuration,
+      serviceId: dto.serviceId,
+    });
 
     if (Number.isNaN(endsAt.getTime()) || endsAt <= startsAt) {
       throw new BadRequestException('Horário final deve ser maior que horário inicial');
