@@ -42,6 +42,13 @@ export class CalendarViewQueryDto {
   mode?: 'day' | 'week' = 'day';
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(5)
+  @Max(120)
+  slotMinutes?: number = 30;
+
+  @IsOptional()
   @IsEnum(AppointmentStatus)
   status?: AppointmentStatus;
 

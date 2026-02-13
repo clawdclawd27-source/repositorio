@@ -68,9 +68,18 @@ export class AppointmentsService {
     return d;
   }
 
+  private slotLabel(date: Date, slotMinutes: number) {
+    const total = date.getHours() * 60 + date.getMinutes();
+    const floored = Math.floor(total / slotMinutes) * slotMinutes;
+    const hh = String(Math.floor(floored / 60)).padStart(2, '0');
+    const mm = String(floored % 60).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
   async calendarView(query: CalendarViewQueryDto) {
     const anchor = new Date(query.date);
     const mode = query.mode ?? 'day';
+    const slotMinutes = query.slotMinutes ?? 30;
 
     const from = this.dayStart(anchor);
     const to = new Date(from);
@@ -97,20 +106,29 @@ export class AppointmentsService {
     });
 
     const grouped: Record<string, typeof items> = {};
+    const slotBuckets: Record<string, Record<string, typeof items>> = {};
+
     for (const item of items) {
-      const key = item.startsAt.toISOString().slice(0, 10);
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(item);
+      const dayKey = item.startsAt.toISOString().slice(0, 10);
+      if (!grouped[dayKey]) grouped[dayKey] = [];
+      grouped[dayKey].push(item);
+
+      const slot = this.slotLabel(item.startsAt, slotMinutes);
+      if (!slotBuckets[dayKey]) slotBuckets[dayKey] = {};
+      if (!slotBuckets[dayKey][slot]) slotBuckets[dayKey][slot] = [];
+      slotBuckets[dayKey][slot].push(item);
     }
 
     return {
       mode,
+      slotMinutes,
       range: {
         from: from.toISOString(),
         to: rangeEnd.toISOString(),
       },
       total: items.length,
       grouped,
+      slotBuckets,
     };
   }
 
