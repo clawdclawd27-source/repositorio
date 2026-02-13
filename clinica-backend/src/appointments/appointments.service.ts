@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
+import { AppointmentStatus, ClientPackageStatus, Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -414,10 +414,75 @@ export class AppointmentsService {
   }
 
   async updateStatus(id: string, dto: UpdateAppointmentStatusDto, actor: { id: string; role: UserRole }) {
+    const current = await this.prisma.appointment.findUnique({
+      where: { id },
+      select: { id: true, status: true, clientId: true, serviceId: true },
+    });
+
+    if (!current) {
+      throw new NotFoundException('Agendamento não encontrado');
+    }
+
     const updated = await this.prisma.appointment.update({
       where: { id },
       data: { status: dto.status, notes: dto.notes },
+      include: { service: true, client: true },
     });
+
+    // Consome 1 sessão automaticamente quando o atendimento vira DONE
+    if (current.status !== AppointmentStatus.DONE && dto.status === AppointmentStatus.DONE) {
+      const alreadyConsumed = await this.prisma.clientPackageConsumption.findUnique({
+        where: { appointmentId: id },
+      });
+
+      if (!alreadyConsumed) {
+        const now = new Date();
+        const pkg = await this.prisma.clientPackage.findFirst({
+          where: {
+            clientId: current.clientId,
+            status: ClientPackageStatus.ACTIVE,
+            remainingSessions: { gt: 0 },
+            package: { serviceId: current.serviceId },
+            OR: [{ expiresAt: null }, { expiresAt: { gte: now } }],
+          },
+          orderBy: [{ expiresAt: 'asc' }, { purchasedAt: 'asc' }],
+        });
+
+        if (pkg) {
+          await this.prisma.$transaction(async (tx) => {
+            const updatedPkg = await tx.clientPackage.update({
+              where: { id: pkg.id },
+              data: { remainingSessions: { decrement: 1 } },
+            });
+
+            await tx.clientPackageConsumption.create({
+              data: {
+                clientPackageId: pkg.id,
+                appointmentId: id,
+                notes: `Consumo automático no atendimento ${id}`,
+              },
+            });
+
+            if (updatedPkg.remainingSessions <= 0) {
+              await tx.clientPackage.update({
+                where: { id: pkg.id },
+                data: { status: ClientPackageStatus.COMPLETED, remainingSessions: 0 },
+              });
+            }
+          });
+
+          await this.audit.log({
+            actorUserId: actor.id,
+            actorRole: actor.role,
+            action: 'CONSUME_PACKAGE_SESSION',
+            entityType: 'CLIENT_PACKAGE',
+            entityId: pkg.id,
+            sourcePlatform: 'API',
+            details: { appointmentId: id, clientId: current.clientId, serviceId: current.serviceId },
+          });
+        }
+      }
+    }
 
     await this.audit.log({
       actorUserId: actor.id,
