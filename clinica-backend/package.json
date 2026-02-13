@@ -6,7 +6,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "start:dev": "nest start --watch",
     "build": "nest build",
     "prisma:generate": "prisma generate",

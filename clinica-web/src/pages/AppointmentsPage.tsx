@@ -33,9 +33,6 @@ export function AppointmentsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
 
-  const [clientSearch, setClientSearch] = useState('');
-  const [serviceSearch, setServiceSearch] = useState('');
-
   const [form, setForm] = useState({
     clientId: '',
     serviceId: '',
@@ -62,10 +59,10 @@ export function AppointmentsPage() {
   async function loadRefs() {
     const [c, s] = await Promise.all([
       api.get<Client[]>('/clients'),
-      api.get<{ items: Service[] }>('/services', { params: { active: true, page: 1, pageSize: 200 } }),
+      api.get<{ items: Service[] } | Service[]>('/services', { params: { active: true, page: 1, pageSize: 200 } }),
     ]);
     setClients(c.data || []);
-    setServices(s.data.items || []);
+    setServices(Array.isArray(s.data) ? s.data : s.data.items || []);
   }
 
   useEffect(() => {
@@ -78,18 +75,6 @@ export function AppointmentsPage() {
   }, []);
 
   const appointments = useMemo(() => Object.values(data.grouped).flat(), [data.grouped]);
-
-  const filteredClients = useMemo(() => {
-    const q = clientSearch.trim().toLowerCase();
-    if (!q) return clients;
-    return clients.filter((c) => c.fullName.toLowerCase().includes(q));
-  }, [clients, clientSearch]);
-
-  const filteredServices = useMemo(() => {
-    const q = serviceSearch.trim().toLowerCase();
-    if (!q) return services;
-    return services.filter((s) => s.name.toLowerCase().includes(q));
-  }, [services, serviceSearch]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -129,28 +114,18 @@ export function AppointmentsPage() {
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
         <strong>Nova consulta</strong>
 
-        <input
-          placeholder="Buscar cliente..."
-          value={clientSearch}
-          onChange={(e) => setClientSearch(e.target.value)}
-        />
         <select value={form.clientId} onChange={(e) => setForm((f) => ({ ...f, clientId: e.target.value }))} required>
           <option value="">Selecione cliente</option>
-          {filteredClients.map((c) => (
+          {clients.map((c) => (
             <option key={c.id} value={c.id}>
               {c.fullName}
             </option>
           ))}
         </select>
 
-        <input
-          placeholder="Buscar serviço..."
-          value={serviceSearch}
-          onChange={(e) => setServiceSearch(e.target.value)}
-        />
         <select value={form.serviceId} onChange={(e) => setForm((f) => ({ ...f, serviceId: e.target.value }))} required>
           <option value="">Selecione serviço</option>
-          {filteredServices.map((s) => (
+          {services.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name} ({s.durationMinutes} min)
             </option>

@@ -21,8 +21,9 @@ export function ServicesPage() {
   const [msg, setMsg] = useState('');
 
   async function load() {
-    const { data } = await api.get<ListResponse>('/services', { params: { page: 1, pageSize: 100 } });
-    setItems(data.items || []);
+    const { data } = await api.get<ListResponse | Service[]>('/services', { params: { page: 1, pageSize: 100 } });
+    const rows = Array.isArray(data) ? data : data.items || [];
+    setItems(rows);
   }
 
   useEffect(() => {
@@ -61,7 +62,10 @@ export function ServicesPage() {
 
   return (
     <div className="card" style={{ display: 'grid', gap: 16 }}>
-      <h2 style={{ margin: 0 }}>Serviços</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>Serviços</h2>
+        <button type="button" onClick={() => void load()}>Atualizar lista</button>
+      </div>
 
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
         <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
