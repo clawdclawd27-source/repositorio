@@ -3,7 +3,9 @@ import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
+import { PackagesPage } from './pages/PackagesPage';
 import { SectionPage } from './pages/SectionPage';
+import { ServicesPage } from './pages/ServicesPage';
 
 export default function App() {
   return (
@@ -20,8 +22,8 @@ export default function App() {
         <Route path="/consultas" element={<AppointmentsPage />} />
         <Route path="/tarefas" element={<SectionPage title="Tarefas" hint="Tarefas internas da equipe e responsáveis." />} />
         <Route path="/aniversarios" element={<SectionPage title="Aniversários" hint="Lista de aniversariantes e envio automático." />} />
-        <Route path="/servicos" element={<SectionPage title="Serviços" hint="Catálogo de procedimentos e duração." />} />
-        <Route path="/financeiro" element={<SectionPage title="Financeiro" hint="Entradas, saídas, pendências e saldo." />} />
+        <Route path="/servicos" element={<ServicesPage />} />
+        <Route path="/financeiro" element={<PackagesPage />} />
         <Route path="/estoque" element={<SectionPage title="Estoque" hint="Itens, movimentações e alertas de baixo estoque." />} />
         <Route path="/relatorios" element={<SectionPage title="Relatórios" hint="Indicadores de consultas, financeiro e indicações." />} />
         <Route path="/indicacoes" element={<SectionPage title="Indicações" hint="Indicações de clientes e taxa de conversão." />} />
