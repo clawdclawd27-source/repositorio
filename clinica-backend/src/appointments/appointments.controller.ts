@@ -6,7 +6,13 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { AppointmentsService } from './appointments.service';
-import { CalendarViewQueryDto, CreateAppointmentDto, ListAppointmentsQueryDto, UpdateAppointmentStatusDto } from './dto';
+import {
+  AvailabilityQueryDto,
+  CalendarViewQueryDto,
+  CreateAppointmentDto,
+  ListAppointmentsQueryDto,
+  UpdateAppointmentStatusDto,
+} from './dto';
 
 @Controller('appointments')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionGuard)
@@ -18,6 +24,12 @@ export class AppointmentsController {
   @Permission('appointments', 'view')
   calendarView(@Query() query: CalendarViewQueryDto) {
     return this.appointmentsService.calendarView(query);
+  }
+
+  @Get('availability')
+  @Permission('appointments', 'view')
+  availability(@Query() query: AvailabilityQueryDto) {
+    return this.appointmentsService.availability(query);
   }
 
   @Get()

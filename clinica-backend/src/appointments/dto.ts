@@ -61,6 +61,36 @@ export class CalendarViewQueryDto {
   clientId?: string;
 }
 
+export class AvailabilityQueryDto {
+  @IsDateString()
+  date!: string;
+
+  @IsOptional()
+  @IsString()
+  professionalId?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(5)
+  @Max(120)
+  slotMinutes?: number = 30;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(23)
+  workStartHour?: number = 8;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(24)
+  workEndHour?: number = 18;
+}
+
 export class ListAppointmentsQueryDto {
   @IsOptional()
   @IsDateString()

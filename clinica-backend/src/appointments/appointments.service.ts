@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
+import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CalendarViewQueryDto, CreateAppointmentDto, ListAppointmentsQueryDto, UpdateAppointmentStatusDto } from './dto';
+import {
+  AvailabilityQueryDto,
+  CalendarViewQueryDto,
+  CreateAppointmentDto,
+  ListAppointmentsQueryDto,
+  UpdateAppointmentStatusDto,
+} from './dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -129,6 +135,74 @@ export class AppointmentsService {
       total: items.length,
       grouped,
       slotBuckets,
+    };
+  }
+
+  async availability(query: AvailabilityQueryDto) {
+    const slotMinutes = query.slotMinutes ?? 30;
+    const workStartHour = query.workStartHour ?? 8;
+    const workEndHour = query.workEndHour ?? 18;
+
+    const day = new Date(query.date);
+    const from = this.dayStart(day);
+    const to = this.dayEnd(day);
+
+    const occupied = await this.prisma.appointment.findMany({
+      where: {
+        startsAt: { lte: to },
+        endsAt: { gte: from },
+        status: { in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] },
+        ...(query.professionalId ? { professionalId: query.professionalId } : {}),
+      },
+      select: {
+        id: true,
+        startsAt: true,
+        endsAt: true,
+        clientId: true,
+        professionalId: true,
+        status: true,
+      },
+      orderBy: { startsAt: 'asc' },
+    });
+
+    const workStart = new Date(from);
+    workStart.setHours(workStartHour, 0, 0, 0);
+    const workEnd = new Date(from);
+    workEnd.setHours(workEndHour, 0, 0, 0);
+
+    const slots: Array<{
+      startsAt: string;
+      endsAt: string;
+      available: boolean;
+      conflicts: number;
+    }> = [];
+
+    for (let cursor = new Date(workStart); cursor < workEnd; cursor = new Date(cursor.getTime() + slotMinutes * 60000)) {
+      const slotStart = new Date(cursor);
+      const slotEnd = new Date(cursor.getTime() + slotMinutes * 60000);
+      if (slotEnd > workEnd) break;
+
+      const conflicts = occupied.filter((a) => a.startsAt < slotEnd && a.endsAt > slotStart).length;
+
+      slots.push({
+        startsAt: slotStart.toISOString(),
+        endsAt: slotEnd.toISOString(),
+        available: conflicts === 0,
+        conflicts,
+      });
+    }
+
+    return {
+      date: from.toISOString().slice(0, 10),
+      professionalId: query.professionalId ?? null,
+      slotMinutes,
+      workHours: { startHour: workStartHour, endHour: workEndHour },
+      totals: {
+        slots: slots.length,
+        free: slots.filter((s) => s.available).length,
+        busy: slots.filter((s) => !s.available).length,
+      },
+      slots,
     };
   }
 
