@@ -20,39 +20,96 @@ enum ReferralStatus {
   LOST
 }
 
-model User {
-  id           String     @id @default(uuid())
-  name         String
-  email        String     @unique
-  phone        String?
-  passwordHash String
-  role         UserRole
-  isActive     Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CANCELLED
+  DONE
+  NO_SHOW
+}
 
-  clientsCreated Client[] @relation("CreatedClients")
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  phone           String?
+  passwordHash    String
+  role            UserRole
+  isActive        Boolean   @default(true)
+  clientProfileId String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  clientProfile   Client?   @relation("ClientAccount", fields: [clientProfileId], references: [id])
+  clientsCreated  Client[]  @relation("CreatedClients")
   referralsCreated Referral[] @relation("CreatedReferrals")
-  logs         AuditLog[]
+  appointmentsAsProfessional Appointment[] @relation("ProfessionalAppointments")
+  logs            AuditLog[]
+}
+
+model RolePermission {
+  id        String   @id @default(uuid())
+  role      UserRole
+  moduleKey String
+  canView   Boolean  @default(false)
+  canCreate Boolean  @default(false)
+  canEdit   Boolean  @default(false)
+  canDelete Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([role, moduleKey])
 }
 
 model Client {
-  id               String     @id @default(uuid())
-  fullName         String
-  cpf              String?
-  birthDate        DateTime?
-  email            String?
-  phone            String?
-  emergencyContact String?
-  allergies        String?
+  id                String     @id @default(uuid())
+  fullName          String
+  cpf               String?
+  birthDate         DateTime?
+  email             String?
+  phone             String?
+  emergencyContact  String?
+  allergies         String?
   contraindications String?
-  notes            String?
-  createdById      String?
-  createdBy        User?      @relation("CreatedClients", fields: [createdById], references: [id])
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  notes             String?
+  createdById       String?
+  createdBy         User?      @relation("CreatedClients", fields: [createdById], references: [id])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
-  referralsMade    Referral[] @relation("Referrer")
+  accountUser       User?      @relation("ClientAccount")
+  referralsMade     Referral[] @relation("Referrer")
+  appointments      Appointment[]
+}
+
+model Service {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  durationMinutes Int      @default(60)
+  basePrice       Decimal  @db.Decimal(12, 2)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appointments    Appointment[]
+}
+
+model Appointment {
+  id             String            @id @default(uuid())
+  clientId       String
+  serviceId      String
+  professionalId String?
+  startsAt       DateTime
+  endsAt         DateTime
+  status         AppointmentStatus @default(SCHEDULED)
+  notes          String?
+  createdById    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  client         Client            @relation(fields: [clientId], references: [id])
+  service        Service           @relation(fields: [serviceId], references: [id])
+  professional   User?             @relation("ProfessionalAppointments", fields: [professionalId], references: [id])
 }
 
 model Referral {

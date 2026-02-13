@@ -27,15 +27,32 @@ API base: `http://localhost:3000/api`
 ## Endpoints principais
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+
+### Admin/Owner
 - `GET /api/clients`
 - `POST /api/clients`
 - `PATCH /api/clients/:id`
+- `GET /api/services`
+- `POST /api/services`
+- `PATCH /api/services/:id`
+- `GET /api/appointments`
+- `POST /api/appointments`
+- `PATCH /api/appointments/:id/status`
 - `GET /api/referrals`
 - `POST /api/referrals`
 - `PATCH /api/referrals/:id/status`
 - `GET /api/audit-logs`
 
+### Admin
+- `GET /api/permissions`
+- `POST /api/permissions` (configuração granular do OWNER por módulo)
+
+### Cliente (portal)
+- `GET /api/portal/me`
+- `GET /api/portal/appointments`
+- `GET /api/portal/referrals`
+
 ## Observações
 - RBAC por perfil (ADMIN, OWNER, CLIENT)
-- Auditoria automática nas ações de clientes/indicações
-- Próximo passo: agenda, serviços, financeiro e permissões granulares por módulo para OWNER
+- Permissão granular por módulo/ação para OWNER via `role_permissions`
+- Auditoria automática nas ações principais

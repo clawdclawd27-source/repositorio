@@ -21,6 +21,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       name: user.name,
+      clientProfileId: (user as any).clientProfileId ?? null,
     });
   }
 
@@ -36,10 +37,11 @@ export class AuthService {
       email: user.email,
       role: user.role,
       name: user.name,
+      clientProfileId: (user as any).clientProfileId ?? null,
     });
   }
 
-  private async signToken(payload: { sub: string; email: string; role: string; name: string }) {
+  private async signToken(payload: { sub: string; email: string; role: string; name: string; clientProfileId?: string | null }) {
     const accessToken = await this.jwtService.signAsync(payload);
     return { accessToken, user: payload };
   }
