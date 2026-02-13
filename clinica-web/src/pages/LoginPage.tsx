@@ -24,26 +24,29 @@ export function LoginPage() {
   return (
     <div className="login-wrap">
       <form className="card login-card" onSubmit={onSubmit}>
-        <h1>Clínica Estética</h1>
-        <p className="subtitle">Acesso ao painel administrativo</p>
+        <h1>Clínica Emanuelle Ferreira</h1>
+        <p className="subtitle">Acesso ao sistema</p>
         <label>
           E-mail
           <input placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label>
           Senha
-          <input placeholder="••••••••" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} />
+          <div className="password-row">
+            <input placeholder="Senha" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <button type="button" className="eye-btn" onClick={() => setShowPassword((v) => !v)}>
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
         </label>
-        <label className="toggle-password">
-          <input
-            type="checkbox"
-            checked={showPassword}
-            onChange={(e) => setShowPassword(e.target.checked)}
-          />
-          Mostrar senha
-        </label>
+
         {error && <small>{error}</small>}
-        <button type="submit">Entrar no sistema</button>
+        <button type="submit">Entrar</button>
+
+        <div className="login-links">
+          <a href="#" onClick={(e) => e.preventDefault()}>Esqueci minha senha</a>
+          <a href="#" onClick={(e) => e.preventDefault()}>Cadastrar usuário</a>
+        </div>
       </form>
     </div>
   );
