@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { BirthdaysPage } from './pages/BirthdaysPage';
 import { PackagesPage } from './pages/PackagesPage';
 import { SectionPage } from './pages/SectionPage';
 import { ServicesPage } from './pages/ServicesPage';
@@ -25,7 +26,7 @@ export default function App() {
         <Route path="/clientes" element={<ClientsPage />} />
         <Route path="/consultas" element={<AppointmentsPage />} />
         <Route path="/tarefas" element={<TasksPage />} />
-        <Route path="/aniversarios" element={<SectionPage title="Aniversários" hint="Lista de aniversariantes e envio automático." />} />
+        <Route path="/aniversarios" element={<BirthdaysPage />} />
         <Route path="/servicos" element={<ServicesPage />} />
         <Route path="/financeiro" element={<PackagesPage />} />
         <Route path="/estoque" element={<SectionPage title="Estoque" hint="Itens, movimentações e alertas de baixo estoque." />} />
