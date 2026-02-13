@@ -18,6 +18,9 @@ const shortcuts: Shortcut[] = [
   { label: 'Financeiro', subtitle: 'Pacotes, vendas e saldos', cta: 'Abrir', path: '/financeiro', icon: '💳', enabled: true },
   { label: 'Estoque', subtitle: 'Produtos e consumo', cta: 'Em breve', path: '/estoque', icon: '📦', enabled: false },
   { label: 'Relatórios', subtitle: 'Indicadores de negócio', cta: 'Em breve', path: '/relatorios', icon: '📊', enabled: false },
+  { label: 'Indicações', subtitle: 'Indicações e conversão', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
+  { label: 'Notificações', subtitle: 'Histórico de envios', cta: 'Abrir', path: '/notificacoes', icon: '🔔', enabled: true },
+  { label: 'Configurações', subtitle: 'Preferências do sistema', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
 ];
 
 export function DashboardPage() {

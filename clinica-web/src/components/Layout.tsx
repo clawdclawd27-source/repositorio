@@ -1,35 +1,21 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
-const items = [
-  ['Clientes', '/clientes'],
-  ['Consultas', '/consultas'],
-  ['Tarefas', '/tarefas'],
-  ['Aniversários', '/aniversarios'],
-  ['Serviços', '/servicos'],
-  ['Financeiro', '/financeiro'],
-  ['Estoque', '/estoque'],
-  ['Relatórios', '/relatorios'],
-  ['Indicações', '/indicacoes'],
-  ['Notificações', '/notificacoes'],
-  ['Configurações', '/configuracoes'],
-];
 
 export function Layout() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <h2>Clínica Painel</h2>
-        <p>{user?.name} ({user?.role})</p>
-        <nav>
-          {items.map(([label, path]) => (
-            <Link key={path} to={path}>{label}</Link>
-          ))}
-        </nav>
-        <button onClick={logout}>Sair</button>
-      </aside>
+    <div className="app-shell single">
+      <header className="topbar">
+        <div>
+          <strong>{user?.name}</strong> <span style={{ opacity: 0.8 }}>({user?.role})</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => navigate('/painel')}>Painel</button>
+          <button type="button" onClick={logout}>Sair</button>
+        </div>
+      </header>
       <main className="content">
         <Outlet />
       </main>
