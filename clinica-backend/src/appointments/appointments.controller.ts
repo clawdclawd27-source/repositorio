@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Permission } from '../common/decorators/permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { AppointmentsService } from './appointments.service';
-import { CreateAppointmentDto, UpdateAppointmentStatusDto } from './dto';
+import { CreateAppointmentDto, ListAppointmentsQueryDto, UpdateAppointmentStatusDto } from './dto';
 
 @Controller('appointments')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionGuard)
@@ -16,8 +16,8 @@ export class AppointmentsController {
 
   @Get()
   @Permission('appointments', 'view')
-  list() {
-    return this.appointmentsService.list();
+  list(@Query() query: ListAppointmentsQueryDto) {
+    return this.appointmentsService.list(query);
   }
 
   @Post()

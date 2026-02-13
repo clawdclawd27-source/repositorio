@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAppointmentDto, UpdateAppointmentStatusDto } from './dto';
+import { CreateAppointmentDto, ListAppointmentsQueryDto, UpdateAppointmentStatusDto } from './dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -11,11 +11,49 @@ export class AppointmentsService {
     private audit: AuditService,
   ) {}
 
-  list() {
-    return this.prisma.appointment.findMany({
-      orderBy: { startsAt: 'asc' },
-      include: { client: true, service: true, professional: true },
-    });
+  async list(query: ListAppointmentsQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.AppointmentWhereInput = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.professionalId ? { professionalId: query.professionalId } : {}),
+      ...(query.clientId ? { clientId: query.clientId } : {}),
+      ...((query.from || query.to)
+        ? {
+            startsAt: {
+              ...(query.from ? { gte: new Date(query.from) } : {}),
+              ...(query.to ? { lte: new Date(query.to) } : {}),
+            },
+          }
+        : {}),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.appointment.findMany({
+        where,
+        orderBy: { startsAt: 'asc' },
+        include: {
+          client: true,
+          service: true,
+          professional: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.appointment.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   async create(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
