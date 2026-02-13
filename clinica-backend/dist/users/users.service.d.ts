@@ -13,6 +13,7 @@ export declare class UsersService {
         passwordHash: string;
         role: import(".prisma/client").$Enums.UserRole;
         isActive: boolean;
+        clientProfileId: string | null;
     } | null, null, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
     findById(id: string): import(".prisma/client").Prisma.Prisma__UserClient<{
         id: string;
@@ -24,6 +25,7 @@ export declare class UsersService {
         passwordHash: string;
         role: import(".prisma/client").$Enums.UserRole;
         isActive: boolean;
+        clientProfileId: string | null;
     } | null, null, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
     createUser(input: {
         name: string;
@@ -37,5 +39,6 @@ export declare class UsersService {
         name: string;
         email: string;
         role: import(".prisma/client").$Enums.UserRole;
+        clientProfileId: string | null;
     }>;
 }

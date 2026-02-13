@@ -12,6 +12,7 @@ export declare class AuthService {
             email: string;
             role: string;
             name: string;
+            clientProfileId?: string | null;
         };
     }>;
     login(dto: LoginDto): Promise<{
@@ -21,6 +22,7 @@ export declare class AuthService {
             email: string;
             role: string;
             name: string;
+            clientProfileId?: string | null;
         };
     }>;
     private signToken;

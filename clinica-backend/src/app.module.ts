@@ -9,6 +9,8 @@ import { ServicesModule } from './services/services.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { PortalModule } from './portal/portal.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { TasksModule } from './tasks/tasks.module';
+import { BirthdaysModule } from './birthdays/birthdays.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { PermissionsModule } from './permissions/permissions.module';
     AppointmentsModule,
     PortalModule,
     PermissionsModule,
+    TasksModule,
+    BirthdaysModule,
   ],
 })
 export class AppModule {}

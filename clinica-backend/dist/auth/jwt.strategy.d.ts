@@ -7,11 +7,13 @@ export declare class JwtStrategy extends JwtStrategy_base {
         email: string;
         role: string;
         name: string;
+        clientProfileId?: string | null;
     }): {
         id: string;
         email: string;
         role: string;
         name: string;
+        clientProfileId: string | null;
     };
 }
 export {};

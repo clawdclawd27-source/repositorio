@@ -41,6 +41,10 @@ API base: `http://localhost:3000/api`
 - `GET /api/referrals`
 - `POST /api/referrals`
 - `PATCH /api/referrals/:id/status`
+- `GET /api/tasks`
+- `POST /api/tasks`
+- `PATCH /api/tasks/:id`
+- `GET /api/birthdays?month=2`
 - `GET /api/audit-logs`
 
 ### Admin

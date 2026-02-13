@@ -14,12 +14,31 @@ const users_module_1 = require("./users/users.module");
 const clients_module_1 = require("./clients/clients.module");
 const referrals_module_1 = require("./referrals/referrals.module");
 const audit_module_1 = require("./audit/audit.module");
+const services_module_1 = require("./services/services.module");
+const appointments_module_1 = require("./appointments/appointments.module");
+const portal_module_1 = require("./portal/portal.module");
+const permissions_module_1 = require("./permissions/permissions.module");
+const tasks_module_1 = require("./tasks/tasks.module");
+const birthdays_module_1 = require("./birthdays/birthdays.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, auth_module_1.AuthModule, users_module_1.UsersModule, clients_module_1.ClientsModule, referrals_module_1.ReferralsModule, audit_module_1.AuditModule],
+        imports: [
+            prisma_module_1.PrismaModule,
+            auth_module_1.AuthModule,
+            users_module_1.UsersModule,
+            clients_module_1.ClientsModule,
+            referrals_module_1.ReferralsModule,
+            audit_module_1.AuditModule,
+            services_module_1.ServicesModule,
+            appointments_module_1.AppointmentsModule,
+            portal_module_1.PortalModule,
+            permissions_module_1.PermissionsModule,
+            tasks_module_1.TasksModule,
+            birthdays_module_1.BirthdaysModule,
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

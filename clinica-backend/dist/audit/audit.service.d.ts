@@ -15,12 +15,12 @@ export declare class AuditService {
     list(): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         createdAt: Date;
-        actorUserId: string | null;
         actorRole: import(".prisma/client").$Enums.UserRole | null;
         action: string;
         entityType: string;
         entityId: string | null;
         sourcePlatform: string;
         details: import("@prisma/client/runtime/library").JsonValue | null;
+        actorUserId: string | null;
     }[]>;
 }

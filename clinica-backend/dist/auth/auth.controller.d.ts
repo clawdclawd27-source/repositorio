@@ -10,6 +10,7 @@ export declare class AuthController {
             email: string;
             role: string;
             name: string;
+            clientProfileId?: string | null;
         };
     }>;
     login(dto: LoginDto): Promise<{
@@ -19,6 +20,7 @@ export declare class AuthController {
             email: string;
             role: string;
             name: string;
+            clientProfileId?: string | null;
         };
     }>;
 }

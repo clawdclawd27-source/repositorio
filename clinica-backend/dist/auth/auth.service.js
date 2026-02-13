@@ -29,6 +29,7 @@ let AuthService = class AuthService {
             email: user.email,
             role: user.role,
             name: user.name,
+            clientProfileId: user.clientProfileId ?? null,
         });
     }
     async login(dto) {
@@ -43,6 +44,7 @@ let AuthService = class AuthService {
             email: user.email,
             role: user.role,
             name: user.name,
+            clientProfileId: user.clientProfileId ?? null,
         });
     }
     async signToken(payload) {

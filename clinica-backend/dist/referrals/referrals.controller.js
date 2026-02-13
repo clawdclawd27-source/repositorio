@@ -14,9 +14,11 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReferralsController = void 0;
 const common_1 = require("@nestjs/common");
+const permission_decorator_1 = require("../common/decorators/permission.decorator");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const role_enum_1 = require("../common/enums/role.enum");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const permission_guard_1 = require("../common/guards/permission.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const dto_1 = require("./dto");
 const referrals_service_1 = require("./referrals.service");
@@ -38,6 +40,7 @@ exports.ReferralsController = ReferralsController;
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN, role_enum_1.Role.OWNER),
+    (0, permission_decorator_1.Permission)('referrals', 'view'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
@@ -45,6 +48,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN, role_enum_1.Role.OWNER, role_enum_1.Role.CLIENT),
+    (0, permission_decorator_1.Permission)('referrals', 'create'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -54,6 +58,7 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id/status'),
     (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN, role_enum_1.Role.OWNER),
+    (0, permission_decorator_1.Permission)('referrals', 'edit'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Req)()),
@@ -63,7 +68,7 @@ __decorate([
 ], ReferralsController.prototype, "updateStatus", null);
 exports.ReferralsController = ReferralsController = __decorate([
     (0, common_1.Controller)('referrals'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard, permission_guard_1.PermissionGuard),
     __metadata("design:paramtypes", [referrals_service_1.ReferralsService])
 ], ReferralsController);
 //# sourceMappingURL=referrals.controller.js.map

@@ -38,6 +38,7 @@ let UsersService = class UsersService {
                 name: true,
                 email: true,
                 role: true,
+                clientProfileId: true,
                 createdAt: true,
             },
         });
