@@ -1,5 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { PortalListAppointmentsQueryDto, PortalListReferralsQueryDto } from './dto';
 
 @Injectable()
 export class PortalService {
@@ -15,20 +17,69 @@ export class PortalService {
     return this.prisma.client.findUnique({ where: { id: clientId } });
   }
 
-  async myAppointments(user: { clientProfileId?: string | null }) {
+  async myAppointments(user: { clientProfileId?: string | null }, query: PortalListAppointmentsQueryDto) {
     const clientId = this.ensureClientProfile(user);
-    return this.prisma.appointment.findMany({
-      where: { clientId },
-      orderBy: { startsAt: 'asc' },
-      include: { service: true },
-    });
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.AppointmentWhereInput = {
+      clientId,
+      ...(query.status ? { status: query.status } : {}),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.appointment.findMany({
+        where,
+        orderBy: { startsAt: 'asc' },
+        include: {
+          service: true,
+          professional: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.appointment.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
-  async myReferrals(user: { clientProfileId?: string | null }) {
+  async myReferrals(user: { clientProfileId?: string | null }, query: PortalListReferralsQueryDto) {
     const clientId = this.ensureClientProfile(user);
-    return this.prisma.referral.findMany({
-      where: { referrerClientId: clientId },
-      orderBy: { createdAt: 'desc' },
-    });
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.ReferralWhereInput = {
+      referrerClientId: clientId,
+      ...(query.status ? { status: query.status } : {}),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.referral.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.referral.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 }

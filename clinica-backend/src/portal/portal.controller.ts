@@ -1,8 +1,9 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { PortalListAppointmentsQueryDto, PortalListReferralsQueryDto } from './dto';
 import { PortalService } from './portal.service';
 
 @Controller('portal')
@@ -17,12 +18,12 @@ export class PortalController {
   }
 
   @Get('appointments')
-  myAppointments(@Req() req: any) {
-    return this.portalService.myAppointments(req.user);
+  myAppointments(@Req() req: any, @Query() query: PortalListAppointmentsQueryDto) {
+    return this.portalService.myAppointments(req.user, query);
   }
 
   @Get('referrals')
-  myReferrals(@Req() req: any) {
-    return this.portalService.myReferrals(req.user);
+  myReferrals(@Req() req: any, @Query() query: PortalListReferralsQueryDto) {
+    return this.portalService.myReferrals(req.user, query);
   }
 }
