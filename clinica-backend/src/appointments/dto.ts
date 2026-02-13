@@ -1,6 +1,6 @@
 import { AppointmentStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsString()
@@ -16,8 +16,13 @@ export class CreateAppointmentDto {
   @IsDateString()
   startsAt!: string;
 
+  @IsOptional()
   @IsDateString()
-  endsAt!: string;
+  endsAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  useServiceDuration?: boolean;
 
   @IsOptional()
   @IsString()

@@ -83,6 +83,34 @@ export class AppointmentsService {
     return `${hh}:${mm}`;
   }
 
+  private async resolveAppointmentWindow(dto: CreateAppointmentDto) {
+    const startsAt = new Date(dto.startsAt);
+    if (Number.isNaN(startsAt.getTime())) {
+      throw new BadRequestException('Data/hora inicial inválida para agendamento');
+    }
+
+    if (dto.endsAt && !dto.useServiceDuration) {
+      const endsAt = new Date(dto.endsAt);
+      return { startsAt, endsAt };
+    }
+
+    const service = await this.prisma.service.findUnique({
+      where: { id: dto.serviceId },
+      select: { id: true, durationMinutes: true, active: true },
+    });
+
+    if (!service) {
+      throw new BadRequestException('Serviço não encontrado para definir duração');
+    }
+    if (!service.active) {
+      throw new BadRequestException('Serviço inativo não pode ser agendado');
+    }
+
+    const durationMinutes = service.durationMinutes || 60;
+    const endsAt = new Date(startsAt.getTime() + durationMinutes * 60000);
+    return { startsAt, endsAt };
+  }
+
   async calendarView(query: CalendarViewQueryDto) {
     const anchor = new Date(query.date);
     const mode = query.mode ?? 'day';
@@ -272,8 +300,7 @@ export class AppointmentsService {
   }
 
   async checkAndCreate(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
-    const startsAt = new Date(dto.startsAt);
-    const endsAt = new Date(dto.endsAt);
+    const { startsAt, endsAt } = await this.resolveAppointmentWindow(dto);
 
     await this.validateScheduleConflicts({
       startsAt,
@@ -337,13 +364,19 @@ export class AppointmentsService {
   }
 
   async create(dto: CreateAppointmentDto, actor: { id: string; role: UserRole }) {
+    const { startsAt, endsAt } = await this.resolveAppointmentWindow(dto);
+
+    if (Number.isNaN(endsAt.getTime()) || endsAt <= startsAt) {
+      throw new BadRequestException('Horário final deve ser maior que horário inicial');
+    }
+
     const created = await this.prisma.appointment.create({
       data: {
         clientId: dto.clientId,
         serviceId: dto.serviceId,
         professionalId: dto.professionalId,
-        startsAt: new Date(dto.startsAt),
-        endsAt: new Date(dto.endsAt),
+        startsAt,
+        endsAt,
         notes: dto.notes,
         createdById: actor.id,
       },

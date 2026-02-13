@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateServiceDto, UpdateServiceDto } from './dto';
+import { CreateServiceDto, ListServicesQueryDto, UpdateServiceDto } from './dto';
 
 @Injectable()
 export class ServicesService {
@@ -11,8 +11,35 @@ export class ServicesService {
     private audit: AuditService,
   ) {}
 
-  list() {
-    return this.prisma.service.findMany({ orderBy: { name: 'asc' } });
+  async list(query: ListServicesQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.ServiceWhereInput = {
+      ...(typeof query.active === 'boolean' ? { active: query.active } : {}),
+      ...(query.search
+        ? {
+            OR: [
+              { name: { contains: query.search, mode: 'insensitive' } },
+              { description: { contains: query.search, mode: 'insensitive' } },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.service.findMany({ where, orderBy: { name: 'asc' }, skip, take: pageSize }),
+      this.prisma.service.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   async create(dto: CreateServiceDto, actor: { id: string; role: UserRole }) {
