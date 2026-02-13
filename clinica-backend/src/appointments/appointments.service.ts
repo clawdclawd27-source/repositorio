@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateAppointmentDto, ListAppointmentsQueryDto, UpdateAppointmentStatusDto } from './dto';
+import { CalendarViewQueryDto, CreateAppointmentDto, ListAppointmentsQueryDto, UpdateAppointmentStatusDto } from './dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -53,6 +53,64 @@ export class AppointmentsService {
       pageSize,
       total,
       totalPages: Math.ceil(total / pageSize),
+    };
+  }
+
+  private dayStart(date: Date) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private dayEnd(date: Date) {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
+  async calendarView(query: CalendarViewQueryDto) {
+    const anchor = new Date(query.date);
+    const mode = query.mode ?? 'day';
+
+    const from = this.dayStart(anchor);
+    const to = new Date(from);
+    if (mode === 'week') {
+      to.setDate(to.getDate() + 6);
+    }
+    const rangeEnd = this.dayEnd(to);
+
+    const where: Prisma.AppointmentWhereInput = {
+      startsAt: { gte: from, lte: rangeEnd },
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.professionalId ? { professionalId: query.professionalId } : {}),
+      ...(query.clientId ? { clientId: query.clientId } : {}),
+    };
+
+    const items = await this.prisma.appointment.findMany({
+      where,
+      orderBy: { startsAt: 'asc' },
+      include: {
+        client: true,
+        service: true,
+        professional: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    const grouped: Record<string, typeof items> = {};
+    for (const item of items) {
+      const key = item.startsAt.toISOString().slice(0, 10);
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
+    }
+
+    return {
+      mode,
+      range: {
+        from: from.toISOString(),
+        to: rangeEnd.toISOString(),
+      },
+      total: items.length,
+      grouped,
     };
   }
 

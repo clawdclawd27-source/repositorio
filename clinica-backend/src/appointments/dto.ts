@@ -1,6 +1,6 @@
 import { AppointmentStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsString()
@@ -31,6 +31,27 @@ export class UpdateAppointmentStatusDto {
   @IsOptional()
   @IsString()
   notes?: string;
+}
+
+export class CalendarViewQueryDto {
+  @IsDateString()
+  date!: string;
+
+  @IsOptional()
+  @IsIn(['day', 'week'])
+  mode?: 'day' | 'week' = 'day';
+
+  @IsOptional()
+  @IsEnum(AppointmentStatus)
+  status?: AppointmentStatus;
+
+  @IsOptional()
+  @IsString()
+  professionalId?: string;
+
+  @IsOptional()
+  @IsString()
+  clientId?: string;
 }
 
 export class ListAppointmentsQueryDto {
