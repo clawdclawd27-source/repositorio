@@ -26,6 +26,7 @@ export function ReferralsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [msg, setMsg] = useState('');
   const [form, setForm] = useState({ referrerClientId: '', referredName: '', referredPhone: '', referredEmail: '', notes: '' });
+  const [referrerNameInput, setReferrerNameInput] = useState('');
   const [statusDraft, setStatusDraft] = useState<Record<string, Referral['status']>>({});
 
   async function load() {
@@ -53,13 +54,26 @@ export function ReferralsPage() {
     e.preventDefault();
     setMsg('');
     try {
+      const typed = referrerNameInput.trim();
+      const matched = typed
+        ? clients.find((c) => c.fullName.toLowerCase() === typed.toLowerCase())
+        : undefined;
+
+      const referrerClientId = form.referrerClientId || matched?.id;
+      if (!referrerClientId) {
+        setMsg('Informe o nome do indicador (cliente já cadastrado) ou selecione na lista.');
+        return;
+      }
+
       await api.post('/referrals', {
         ...form,
+        referrerClientId,
         referredPhone: form.referredPhone || undefined,
         referredEmail: form.referredEmail || undefined,
         notes: form.notes || undefined,
       });
       setMsg('Indicação criada.');
+      setReferrerNameInput('');
       setForm({ referrerClientId: '', referredName: '', referredPhone: '', referredEmail: '', notes: '' });
       await load();
     } catch (err: any) {
@@ -84,8 +98,13 @@ export function ReferralsPage() {
 
       <form onSubmit={create} style={{ display: 'grid', gap: 8 }}>
         <strong>Nova indicação</strong>
-        <select value={form.referrerClientId} onChange={(e) => setForm((f) => ({ ...f, referrerClientId: e.target.value }))} required>
-          <option value="">Cliente indicador</option>
+        <input
+          placeholder="Nome de quem indicou"
+          value={referrerNameInput}
+          onChange={(e) => setReferrerNameInput(e.target.value)}
+        />
+        <select value={form.referrerClientId} onChange={(e) => setForm((f) => ({ ...f, referrerClientId: e.target.value }))}>
+          <option value="">Ou selecione o cliente indicador</option>
           {clients.map((c) => <option key={c.id} value={c.id}>{c.fullName}</option>)}
         </select>
         <input placeholder="Nome do indicado" value={form.referredName} onChange={(e) => setForm((f) => ({ ...f, referredName: e.target.value }))} required />
