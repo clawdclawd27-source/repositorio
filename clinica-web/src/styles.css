@@ -162,3 +162,21 @@ small { color: #be123c; }
   box-shadow: 0 4px 14px rgba(123, 58, 237, 0.08);
 }
 .birthday-date { color: #7c3aed; margin-top: 4px; font-weight: 600; }
+
+.clients-page .client-card {
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(123, 58, 237, 0.08);
+}
+.clients-page .client-actions button {
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.clients-page .client-history {
+  background: #fcf7ff;
+  border-radius: 10px;
+  padding: 10px;
+}
+.clients-page .client-history small {
+  color: #6b5a7a;
+  font-weight: 700;
+}

@@ -192,8 +192,11 @@ export function ClientsPage() {
   }
 
   return (
-    <div className="card" style={{ display: 'grid', gap: 12 }}>
-      <h2 style={{ margin: 0 }}>Clientes</h2>
+    <div className="card clients-page" style={{ display: 'grid', gap: 12 }}>
+      <div>
+        <h2 style={{ margin: 0 }}>Clientes</h2>
+        <small style={{ color: '#7a2e65' }}>Cadastro, histórico completo, pacotes e ações rápidas</small>
+      </div>
 
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
         <input placeholder="Nome completo" value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} required />
@@ -218,7 +221,7 @@ export function ClientsPage() {
 
       <div style={{ display: 'grid', gap: 8 }}>
         {items.map((c) => (
-          <div key={c.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10, display: 'grid', gap: 8 }}>
+          <div key={c.id} className="client-card" style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10, display: 'grid', gap: 8 }}>
             <div>
               <strong>{c.fullName}</strong>
               <div>Telefone/WhatsApp: {c.phone || '-'}</div>
@@ -227,14 +230,14 @@ export function ClientsPage() {
               <div>Data de nascimento: {c.birthDate ? new Date(c.birthDate).toLocaleDateString('pt-BR') : '-'}</div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="client-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button" onClick={() => startEdit(c)}>Editar informações</button>
               <button type="button" onClick={() => void openHistory(c.id)}>Histórico e pacotes</button>
               <button type="button" onClick={() => void removeClient(c.id)} style={{ background: '#be123c' }}>Apagar cliente</button>
             </div>
 
             {openHistoryId === c.id ? (
-              <div style={{ borderTop: '1px dashed #e9d5ff', paddingTop: 8, display: 'grid', gap: 8 }}>
+              <div className="client-history" style={{ borderTop: '1px dashed #e9d5ff', paddingTop: 8, display: 'grid', gap: 8 }}>
                 <strong>Histórico do cliente</strong>
 
                 <div>
