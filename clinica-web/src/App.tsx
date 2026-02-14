@@ -12,6 +12,7 @@ import { ServicesPage } from './pages/ServicesPage';
 import { TasksPage } from './pages/TasksPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 export default function App() {
   return (
@@ -35,7 +36,7 @@ export default function App() {
         <Route path="/relatorios" element={<ReportsPage />} />
         <Route path="/indicacoes" element={<SectionPage title="Indicações" hint="Indicações de clientes e taxa de conversão." />} />
         <Route path="/notificacoes" element={<SectionPage title="Notificações" hint="Logs e disparos de WhatsApp." />} />
-        <Route path="/configuracoes" element={<SectionPage title="Configurações" hint="Permissões e templates do sistema." />} />
+        <Route path="/configuracoes" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/painel" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />

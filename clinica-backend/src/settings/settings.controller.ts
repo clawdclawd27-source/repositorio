@@ -5,7 +5,7 @@ import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { UpdateNotificationSettingsDto } from './dto';
+import { UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
@@ -13,6 +13,30 @@ import { SettingsService } from './settings.service';
 @Roles(Role.ADMIN, Role.OWNER)
 export class SettingsController {
   constructor(private settingsService: SettingsService) {}
+
+  @Get('clinic-profile')
+  @Permission('settings', 'view')
+  getClinicProfile() {
+    return this.settingsService.getClinicProfile();
+  }
+
+  @Put('clinic-profile')
+  @Permission('settings', 'edit')
+  updateClinicProfile(@Body() dto: UpdateClinicProfileDto) {
+    return this.settingsService.updateClinicProfile(dto);
+  }
+
+  @Get('agenda')
+  @Permission('settings', 'view')
+  getAgenda() {
+    return this.settingsService.getAgendaSettings();
+  }
+
+  @Put('agenda')
+  @Permission('settings', 'edit')
+  updateAgenda(@Body() dto: UpdateAgendaSettingsDto) {
+    return this.settingsService.updateAgendaSettings(dto);
+  }
 
   @Get('notifications')
   @Permission('settings', 'view')
