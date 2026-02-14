@@ -7,6 +7,7 @@ import {
   ListPackageConsumptionsQueryDto,
   ListPackagesQueryDto,
   SellPackageDto,
+  UpdateSoldClientPackageDto,
   UpdateTreatmentPackageDto,
 } from './dto';
 
@@ -158,6 +159,60 @@ export class PackagesService {
       action: 'DELETE_TREATMENT_PACKAGE',
       entityType: 'TREATMENT_PACKAGE',
       entityId: id,
+      sourcePlatform: 'API',
+    });
+
+    return { ok: true };
+  }
+
+  async updateSoldClientPackage(
+    clientPackageId: string,
+    dto: UpdateSoldClientPackageDto,
+    actor: { id: string; role: UserRole },
+  ) {
+    const existing = await this.prisma.clientPackage.findUnique({ where: { id: clientPackageId } });
+    if (!existing) throw new NotFoundException('Pacote comprado não encontrado');
+
+    const updated = await this.prisma.clientPackage.update({
+      where: { id: clientPackageId },
+      data: {
+        remainingSessions: dto.remainingSessions,
+        status: dto.status,
+        pricePaid: dto.pricePaid !== undefined ? new Prisma.Decimal(dto.pricePaid) : undefined,
+        notes: dto.notes,
+      },
+      include: { package: true, client: true },
+    });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'UPDATE_CLIENT_PACKAGE',
+      entityType: 'CLIENT_PACKAGE',
+      entityId: updated.id,
+      sourcePlatform: 'API',
+    });
+
+    return updated;
+  }
+
+  async removeSoldClientPackage(clientPackageId: string, actor: { id: string; role: UserRole }) {
+    const existing = await this.prisma.clientPackage.findUnique({ where: { id: clientPackageId } });
+    if (!existing) throw new NotFoundException('Pacote comprado não encontrado');
+
+    const consumptions = await this.prisma.clientPackageConsumption.count({ where: { clientPackageId } });
+    if (consumptions > 0) {
+      throw new BadRequestException('Este pacote comprado já possui consumos e não pode ser apagado.');
+    }
+
+    await this.prisma.clientPackage.delete({ where: { id: clientPackageId } });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'DELETE_CLIENT_PACKAGE',
+      entityType: 'CLIENT_PACKAGE',
+      entityId: clientPackageId,
       sourcePlatform: 'API',
     });
 

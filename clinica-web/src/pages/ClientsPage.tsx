@@ -13,7 +13,7 @@ type Client = {
 type Appointment = {
   id: string;
   startsAt: string;
-  status: string;
+  status: 'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED';
   service?: { name?: string };
 };
 
@@ -21,8 +21,8 @@ type ClientPackage = {
   id: string;
   remainingSessions: number;
   totalSessions: number;
-  computedStatus?: string;
-  status?: string;
+  computedStatus?: 'ACTIVE' | 'COMPLETED' | 'EXPIRED';
+  status?: 'ACTIVE' | 'COMPLETED' | 'EXPIRED';
   package?: { name?: string };
 };
 
@@ -38,6 +38,9 @@ export function ClientsPage() {
   const [historyAppointments, setHistoryAppointments] = useState<Appointment[]>([]);
   const [historyPackages, setHistoryPackages] = useState<ClientPackage[]>([]);
 
+  const [apptDraft, setApptDraft] = useState<Record<string, { startsAt: string; status: Appointment['status'] }>>({});
+  const [pkgDraft, setPkgDraft] = useState<Record<string, { remainingSessions: number; status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' }>>({});
+
   async function load() {
     const { data } = await api.get<Client[]>('/clients');
     setItems(data || []);
@@ -51,11 +54,7 @@ export function ClientsPage() {
     e.preventDefault();
     setMsg('');
     try {
-      const payload = {
-        ...form,
-        birthDate: form.birthDate || undefined,
-      };
-
+      const payload = { ...form, birthDate: form.birthDate || undefined };
       if (editingId) {
         await api.patch(`/clients/${editingId}`, payload);
         setMsg('Cliente atualizado.');
@@ -63,7 +62,6 @@ export function ClientsPage() {
         await api.post('/clients', payload);
         setMsg('Cliente criado.');
       }
-
       setForm(initialForm);
       setEditingId(null);
       await load();
@@ -84,9 +82,7 @@ export function ClientsPage() {
   }
 
   async function removeClient(id: string) {
-    const ok = window.confirm('Deseja apagar este cliente?');
-    if (!ok) return;
-
+    if (!window.confirm('Deseja apagar este cliente?')) return;
     setMsg('');
     try {
       await api.delete(`/clients/${id}`);
@@ -112,17 +108,86 @@ export function ClientsPage() {
 
     setOpenHistoryId(clientId);
     setMsg('');
-
     try {
       const [ap, pk] = await Promise.all([
         api.get('/appointments', { params: { clientId, page: 1, pageSize: 20 } }),
         api.get(`/packages/client/${clientId}/balances`),
       ]);
 
-      setHistoryAppointments(ap.data?.items || []);
-      setHistoryPackages(pk.data || []);
+      const aRows: Appointment[] = ap.data?.items || [];
+      const pRows: ClientPackage[] = pk.data || [];
+      setHistoryAppointments(aRows);
+      setHistoryPackages(pRows);
+
+      const aDraft: Record<string, { startsAt: string; status: Appointment['status'] }> = {};
+      aRows.forEach((a) => {
+        const d = new Date(a.startsAt);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        aDraft[a.id] = { startsAt: d.toISOString().slice(0, 16), status: a.status };
+      });
+      setApptDraft(aDraft);
+
+      const pDraft: Record<string, { remainingSessions: number; status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' }> = {};
+      pRows.forEach((p) => {
+        pDraft[p.id] = {
+          remainingSessions: p.remainingSessions,
+          status: (p.computedStatus || p.status || 'ACTIVE') as 'ACTIVE' | 'COMPLETED' | 'EXPIRED',
+        };
+      });
+      setPkgDraft(pDraft);
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao carregar histórico do cliente');
+    }
+  }
+
+  async function saveAppointment(a: Appointment) {
+    const d = apptDraft[a.id];
+    if (!d) return;
+
+    try {
+      await api.patch(`/appointments/${a.id}/reschedule`, { startsAt: new Date(d.startsAt).toISOString(), useServiceDuration: true });
+      await api.patch(`/appointments/${a.id}/status`, { status: d.status });
+      setMsg('Consulta atualizada.');
+      if (openHistoryId) await openHistory(openHistoryId);
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao editar consulta');
+    }
+  }
+
+  async function removeAppointment(id: string) {
+    if (!window.confirm('Apagar esta consulta?')) return;
+    try {
+      await api.delete(`/appointments/${id}`);
+      setMsg('Consulta apagada.');
+      if (openHistoryId) await openHistory(openHistoryId);
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao apagar consulta');
+    }
+  }
+
+  async function saveClientPackage(p: ClientPackage) {
+    const d = pkgDraft[p.id];
+    if (!d) return;
+    try {
+      await api.patch(`/packages/client-package/${p.id}`, {
+        remainingSessions: d.remainingSessions,
+        status: d.status,
+      });
+      setMsg('Pacote comprado atualizado.');
+      if (openHistoryId) await openHistory(openHistoryId);
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao editar pacote comprado');
+    }
+  }
+
+  async function removeClientPackage(id: string) {
+    if (!window.confirm('Apagar este pacote comprado?')) return;
+    try {
+      await api.delete(`/packages/client-package/${id}`);
+      setMsg('Pacote comprado apagado.');
+      if (openHistoryId) await openHistory(openHistoryId);
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao apagar pacote comprado');
     }
   }
 
@@ -131,52 +196,21 @@ export function ClientsPage() {
       <h2 style={{ margin: 0 }}>Clientes</h2>
 
       <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
-        <input
-          placeholder="Nome completo"
-          value={form.fullName}
-          onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-          required
-        />
+        <input placeholder="Nome completo" value={form.fullName} onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))} required />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <input
-            placeholder="Telefone / WhatsApp"
-            value={form.phone}
-            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-            required
-          />
-          <input
-            placeholder="E-mail"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            required
-          />
+          <input placeholder="Telefone / WhatsApp" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} required />
+          <input placeholder="E-mail" type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <input
-            placeholder="CPF"
-            value={form.cpf}
-            onChange={(e) => setForm((f) => ({ ...f, cpf: e.target.value }))}
-            required
-          />
-          <input
-            type="date"
-            placeholder="Data de nascimento"
-            value={form.birthDate}
-            onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))}
-            required
-          />
+          <input placeholder="CPF" value={form.cpf} onChange={(e) => setForm((f) => ({ ...f, cpf: e.target.value }))} required />
+          <input type="date" value={form.birthDate} onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))} required />
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="submit">{editingId ? 'Salvar edição' : 'Criar cliente'}</button>
-          {editingId ? (
-            <button type="button" onClick={() => { setEditingId(null); setForm(initialForm); }}>
-              Cancelar
-            </button>
-          ) : null}
+          {editingId ? <button type="button" onClick={() => { setEditingId(null); setForm(initialForm); }}>Cancelar</button> : null}
         </div>
       </form>
 
@@ -190,9 +224,7 @@ export function ClientsPage() {
               <div>Telefone/WhatsApp: {c.phone || '-'}</div>
               <div>E-mail: {c.email || '-'}</div>
               <div>CPF: {c.cpf || '-'}</div>
-              <div>
-                Data de nascimento: {c.birthDate ? new Date(c.birthDate).toLocaleDateString('pt-BR') : '-'}
-              </div>
+              <div>Data de nascimento: {c.birthDate ? new Date(c.birthDate).toLocaleDateString('pt-BR') : '-'}</div>
             </div>
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -209,9 +241,26 @@ export function ClientsPage() {
                   <small>Consultas recentes</small>
                   {historyAppointments.length === 0 ? <div>Nenhuma consulta encontrada.</div> : null}
                   {historyAppointments.map((a) => (
-                    <div key={a.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, marginTop: 6 }}>
-                      <div>{new Date(a.startsAt).toLocaleString('pt-BR')} · {a.service?.name || '-'} </div>
-                      <div>Status: {a.status}</div>
+                    <div key={a.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, marginTop: 6, display: 'grid', gap: 6 }}>
+                      <div><strong>{a.service?.name || '-'}</strong> · {new Date(a.startsAt).toLocaleString('pt-BR')}</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 6 }}>
+                        <input
+                          type="datetime-local"
+                          value={apptDraft[a.id]?.startsAt || ''}
+                          onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { status: a.status }), startsAt: e.target.value } }))}
+                        />
+                        <select
+                          value={apptDraft[a.id]?.status || a.status}
+                          onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { startsAt: '' }), status: e.target.value as Appointment['status'] } }))}
+                        >
+                          <option value="SCHEDULED">Agendada</option>
+                          <option value="CONFIRMED">Confirmada</option>
+                          <option value="DONE">Concluída</option>
+                          <option value="CANCELLED">Cancelada</option>
+                        </select>
+                        <button type="button" onClick={() => void saveAppointment(a)}>Editar</button>
+                        <button type="button" onClick={() => void removeAppointment(a.id)} style={{ background: '#be123c' }}>Apagar</button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -220,10 +269,26 @@ export function ClientsPage() {
                   <small>Pacotes comprados</small>
                   {historyPackages.length === 0 ? <div>Nenhum pacote comprado.</div> : null}
                   {historyPackages.map((p) => (
-                    <div key={p.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, marginTop: 6 }}>
-                      <div>{p.package?.name || '-'}</div>
-                      <div>Status: {p.computedStatus || p.status}</div>
-                      <div>Sessões: {p.remainingSessions}/{p.totalSessions}</div>
+                    <div key={p.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, marginTop: 6, display: 'grid', gap: 6 }}>
+                      <div><strong>{p.package?.name || '-'}</strong> · Sessões: {p.remainingSessions}/{p.totalSessions}</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 6 }}>
+                        <input
+                          type="number"
+                          min={0}
+                          value={pkgDraft[p.id]?.remainingSessions ?? p.remainingSessions}
+                          onChange={(e) => setPkgDraft((prev) => ({ ...prev, [p.id]: { ...(prev[p.id] || { status: (p.computedStatus || p.status || 'ACTIVE') as any }), remainingSessions: Number(e.target.value) } }))}
+                        />
+                        <select
+                          value={pkgDraft[p.id]?.status || p.computedStatus || p.status || 'ACTIVE'}
+                          onChange={(e) => setPkgDraft((prev) => ({ ...prev, [p.id]: { ...(prev[p.id] || { remainingSessions: p.remainingSessions }), status: e.target.value as 'ACTIVE' | 'COMPLETED' | 'EXPIRED' } }))}
+                        >
+                          <option value="ACTIVE">Ativo</option>
+                          <option value="COMPLETED">Concluído</option>
+                          <option value="EXPIRED">Expirado</option>
+                        </select>
+                        <button type="button" onClick={() => void saveClientPackage(p)}>Editar</button>
+                        <button type="button" onClick={() => void removeClientPackage(p.id)} style={{ background: '#be123c' }}>Apagar</button>
+                      </div>
                     </div>
                   ))}
                 </div>

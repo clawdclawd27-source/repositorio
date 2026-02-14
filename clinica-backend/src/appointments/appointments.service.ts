@@ -415,6 +415,40 @@ export class AppointmentsService {
     return created;
   }
 
+  async remove(id: string, actor: { id: string; role: UserRole }) {
+    const current = await this.prisma.appointment.findUnique({
+      where: { id },
+      select: { id: true, status: true, clientId: true },
+    });
+
+    if (!current) throw new NotFoundException('Agendamento não encontrado');
+
+    const consumption = await this.prisma.clientPackageConsumption.findUnique({ where: { appointmentId: id } });
+    if (consumption) {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.clientPackage.update({
+          where: { id: consumption.clientPackageId },
+          data: { remainingSessions: { increment: 1 }, status: ClientPackageStatus.ACTIVE },
+        });
+        await tx.clientPackageConsumption.delete({ where: { appointmentId: id } });
+      });
+    }
+
+    await this.prisma.appointment.delete({ where: { id } });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'DELETE_APPOINTMENT',
+      entityType: 'APPOINTMENT',
+      entityId: id,
+      sourcePlatform: 'API',
+      details: { previousStatus: current.status, clientId: current.clientId },
+    });
+
+    return { ok: true };
+  }
+
   async updateStatus(id: string, dto: UpdateAppointmentStatusDto, actor: { id: string; role: UserRole }) {
     const current = await this.prisma.appointment.findUnique({
       where: { id },

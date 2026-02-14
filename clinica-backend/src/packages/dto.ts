@@ -1,5 +1,6 @@
+import { ClientPackageStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateTreatmentPackageDto {
   @IsString()
@@ -70,6 +71,28 @@ export class SellPackageDto {
   @IsOptional()
   @IsDateString()
   purchasedAt?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}
+
+export class UpdateSoldClientPackageDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  remainingSessions?: number;
+
+  @IsOptional()
+  @IsEnum(ClientPackageStatus)
+  status?: ClientPackageStatus;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  pricePaid?: number;
 
   @IsOptional()
   @IsString()

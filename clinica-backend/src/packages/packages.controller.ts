@@ -10,6 +10,7 @@ import {
   ListPackageConsumptionsQueryDto,
   ListPackagesQueryDto,
   SellPackageDto,
+  UpdateSoldClientPackageDto,
   UpdateTreatmentPackageDto,
 } from './dto';
 import { PackagesService } from './packages.service';
@@ -48,6 +49,22 @@ export class PackagesController {
   @Permission('finance', 'edit')
   remove(@Param('id') id: string, @Req() req: any) {
     return this.packagesService.remove(id, req.user);
+  }
+
+  @Patch('client-package/:clientPackageId')
+  @Permission('finance', 'edit')
+  updateSoldClientPackage(
+    @Param('clientPackageId') clientPackageId: string,
+    @Body() dto: UpdateSoldClientPackageDto,
+    @Req() req: any,
+  ) {
+    return this.packagesService.updateSoldClientPackage(clientPackageId, dto, req.user);
+  }
+
+  @Delete('client-package/:clientPackageId')
+  @Permission('finance', 'edit')
+  removeSoldClientPackage(@Param('clientPackageId') clientPackageId: string, @Req() req: any) {
+    return this.packagesService.removeSoldClientPackage(clientPackageId, req.user);
   }
 
   @Get('client/:clientId/balances')
