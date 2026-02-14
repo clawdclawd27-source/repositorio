@@ -13,6 +13,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
     "prisma:seed:demo": "ts-node prisma/seed-demo.ts",
+    "prisma:seed:inventory": "ts-node prisma/seed-inventory.ts",
     "lint": "echo 'configure eslint'"
   },
   "dependencies": {
