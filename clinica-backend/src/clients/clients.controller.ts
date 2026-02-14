@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { Permission } from '../common/decorators/permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
@@ -38,5 +38,12 @@ export class ClientsController {
   @Permission('clients', 'edit')
   update(@Param('id') id: string, @Body() dto: UpdateClientDto, @Req() req: any) {
     return this.clientsService.update(id, dto, req.user);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN, Role.OWNER)
+  @Permission('clients', 'edit')
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.clientsService.remove(id, req.user);
   }
 }

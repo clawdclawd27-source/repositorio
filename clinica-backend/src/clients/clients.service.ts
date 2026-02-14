@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
@@ -63,5 +63,36 @@ export class ClientsService {
     });
 
     return updated;
+  }
+
+  async remove(id: string, actor: { id: string; role: UserRole }) {
+    const existing = await this.findOne(id);
+    if (!existing) throw new NotFoundException('Cliente não encontrado');
+
+    const [appointments, packages, tasks, finance, referrals] = await this.prisma.$transaction([
+      this.prisma.appointment.count({ where: { clientId: id } }),
+      this.prisma.clientPackage.count({ where: { clientId: id } }),
+      this.prisma.task.count({ where: { clientId: id } }),
+      this.prisma.financialEntry.count({ where: { clientId: id } }),
+      this.prisma.referral.count({ where: { referrerClientId: id } }),
+    ]);
+
+    const linked = appointments + packages + tasks + finance + referrals;
+    if (linked > 0) {
+      throw new BadRequestException('Cliente possui histórico vinculado e não pode ser apagado.');
+    }
+
+    await this.prisma.client.delete({ where: { id } });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'DELETE_CLIENT',
+      entityType: 'CLIENT',
+      entityId: id,
+      sourcePlatform: 'API',
+    });
+
+    return { ok: true };
   }
 }
