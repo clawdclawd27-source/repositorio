@@ -37,6 +37,20 @@ function dateISO(daysAgo = 0) {
   return d.toISOString().slice(0, 10);
 }
 
+function statusPt(status: string) {
+  const map: Record<string, string> = {
+    SCHEDULED: 'Agendada',
+    CONFIRMED: 'Confirmada',
+    DONE: 'Concluída',
+    CANCELLED: 'Cancelada',
+    NEW: 'Nova',
+    CONTACTED: 'Contatada',
+    CONVERTED: 'Convertida',
+    LOST: 'Perdida',
+  };
+  return map[status] || status;
+}
+
 export function ReportsPage() {
   const [from, setFrom] = useState(dateISO(30));
   const [to, setTo] = useState(dateISO(0));
@@ -72,65 +86,67 @@ export function ReportsPage() {
   }, []);
 
   return (
-    <div className="card" style={{ display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="reports-page">
+      <div className="card reports-head">
         <div>
-          <h2 style={{ margin: 0 }}>Relatórios</h2>
-          <small style={{ color: '#7a2e65' }}>Financeiro, consultas, indicações e estoque</small>
+          <h2>Relatórios gerenciais</h2>
+          <p>Visão executiva de financeiro, consultas, indicações e estoque.</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="reports-filters">
           <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
           <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           <button onClick={() => void load()}>Atualizar</button>
         </div>
       </div>
 
-      {msg ? <small>{msg}</small> : null}
+      {msg ? <div className="tasks-alert">{msg}</div> : null}
 
       {financial ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          <div className="card"><strong>{money(financial.paidIncome)}</strong><div>Entradas pagas</div></div>
-          <div className="card"><strong>{money(financial.paidExpense)}</strong><div>Saídas pagas</div></div>
-          <div className="card"><strong>{money(financial.net)}</strong><div>Resultado líquido</div></div>
-          <div className="card"><strong>{money(financial.pendingTotal)}</strong><div>Pendente</div></div>
+        <div className="reports-kpis">
+          <div className="reports-kpi income"><span>Entradas pagas</span><strong>{money(financial.paidIncome)}</strong></div>
+          <div className="reports-kpi expense"><span>Saídas pagas</span><strong>{money(financial.paidExpense)}</strong></div>
+          <div className="reports-kpi net"><span>Resultado líquido</span><strong>{money(financial.net)}</strong></div>
+          <div className="reports-kpi pending"><span>Pendente</span><strong>{money(financial.pendingTotal)}</strong></div>
         </div>
       ) : null}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
-          <strong>Consultas por status</strong>
+      <div className="reports-grid">
+        <section className="reports-panel">
+          <h3>Consultas</h3>
+          <div className="reports-subtitle">Status no período</div>
           {appointments?.byStatus?.map((s) => (
-            <div key={s.status}>{s.status}: {s._count._all}</div>
+            <div key={s.status} className="reports-row"><span>{statusPt(s.status)}</span><strong>{s._count._all}</strong></div>
           ))}
 
-          <strong style={{ display: 'block', marginTop: 8 }}>Top serviços</strong>
+          <div className="reports-subtitle" style={{ marginTop: 10 }}>Top serviços</div>
           {appointments?.topServices?.map((s) => (
-            <div key={s.serviceId}>{s.serviceName}: {s.count}</div>
+            <div key={s.serviceId} className="reports-row"><span>{s.serviceName}</span><strong>{s.count}</strong></div>
           ))}
-        </div>
+        </section>
 
-        <div style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
-          <strong>Indicações</strong>
-          <div>Total: {referrals?.total || 0}</div>
-          <div>Convertidas: {referrals?.converted || 0}</div>
-          <div>Taxa de conversão: {referrals?.conversionRate || 0}%</div>
+        <section className="reports-panel">
+          <h3>Indicações</h3>
+          <div className="reports-row"><span>Total</span><strong>{referrals?.total || 0}</strong></div>
+          <div className="reports-row"><span>Convertidas</span><strong>{referrals?.converted || 0}</strong></div>
+          <div className="reports-row"><span>Taxa de conversão</span><strong>{referrals?.conversionRate || 0}%</strong></div>
 
-          <strong style={{ display: 'block', marginTop: 8 }}>Por status</strong>
+          <div className="reports-subtitle" style={{ marginTop: 10 }}>Por status</div>
           {referrals?.byStatus?.map((s) => (
-            <div key={s.status}>{s.status}: {s._count._all}</div>
+            <div key={s.status} className="reports-row"><span>{statusPt(s.status)}</span><strong>{s._count._all}</strong></div>
           ))}
-        </div>
+        </section>
       </div>
 
-      <div style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
-        <strong>Estoque</strong>
-        <div>Itens totais: {inventory?.totalItems || 0}</div>
-        <div>Baixo estoque: {inventory?.lowStockCount || 0}</div>
-        {inventory?.lowStock?.length ? <strong style={{ display: 'block', marginTop: 8 }}>Itens críticos</strong> : null}
+      <section className="reports-panel">
+        <h3>Estoque</h3>
+        <div className="reports-row"><span>Itens totais</span><strong>{inventory?.totalItems || 0}</strong></div>
+        <div className="reports-row"><span>Baixo estoque</span><strong>{inventory?.lowStockCount || 0}</strong></div>
+
+        {inventory?.lowStock?.length ? <div className="reports-subtitle" style={{ marginTop: 10 }}>Itens críticos</div> : null}
         {inventory?.lowStock?.slice(0, 10).map((i) => (
-          <div key={i.id}>{i.name}: {i.currentQty} / mín {i.minQty}</div>
+          <div key={i.id} className="reports-row"><span>{i.name}</span><strong>{i.currentQty} / mín {i.minQty}</strong></div>
         ))}
-      </div>
+      </section>
     </div>
   );
 }
