@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
 type Financial = {
@@ -85,6 +85,9 @@ export function ReportsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const maxAppointments = useMemo(() => Math.max(1, ...(appointments?.byStatus.map((x) => x._count._all) || [1])), [appointments]);
+  const maxTopServices = useMemo(() => Math.max(1, ...(appointments?.topServices.map((x) => x.count) || [1])), [appointments]);
+
   return (
     <div className="reports-page">
       <div className="card reports-head">
@@ -112,18 +115,31 @@ export function ReportsPage() {
 
       <div className="reports-grid">
         <section className="reports-panel">
-          <h3>Consultas</h3>
-          <div className="reports-subtitle">Status no período</div>
-          {appointments?.byStatus?.map((s) => (
-            <div key={s.status} className="reports-row"><span>{statusPt(s.status)}</span><strong>{s._count._all}</strong></div>
-          ))}
-
-          <div className="reports-subtitle" style={{ marginTop: 10 }}>Top serviços</div>
-          {appointments?.topServices?.map((s) => (
-            <div key={s.serviceId} className="reports-row"><span>{s.serviceName}</span><strong>{s.count}</strong></div>
-          ))}
+          <h3>Consultas por status</h3>
+          <div className="bar-list">
+            {appointments?.byStatus?.map((s) => (
+              <div key={s.status} className="bar-item">
+                <div className="bar-label"><span>{statusPt(s.status)}</span><strong>{s._count._all}</strong></div>
+                <div className="bar-track"><div className="bar-fill purple" style={{ width: `${(s._count._all / maxAppointments) * 100}%` }} /></div>
+              </div>
+            ))}
+          </div>
         </section>
 
+        <section className="reports-panel">
+          <h3>Top serviços</h3>
+          <div className="bar-list">
+            {appointments?.topServices?.map((s) => (
+              <div key={s.serviceId} className="bar-item">
+                <div className="bar-label"><span>{s.serviceName}</span><strong>{s.count}</strong></div>
+                <div className="bar-track"><div className="bar-fill pink" style={{ width: `${(s.count / maxTopServices) * 100}%` }} /></div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="reports-grid">
         <section className="reports-panel">
           <h3>Indicações</h3>
           <div className="reports-row"><span>Total</span><strong>{referrals?.total || 0}</strong></div>
@@ -135,18 +151,18 @@ export function ReportsPage() {
             <div key={s.status} className="reports-row"><span>{statusPt(s.status)}</span><strong>{s._count._all}</strong></div>
           ))}
         </section>
+
+        <section className="reports-panel">
+          <h3>Estoque crítico</h3>
+          <div className="reports-row"><span>Itens totais</span><strong>{inventory?.totalItems || 0}</strong></div>
+          <div className="reports-row"><span>Baixo estoque</span><strong>{inventory?.lowStockCount || 0}</strong></div>
+
+          {inventory?.lowStock?.length ? <div className="reports-subtitle" style={{ marginTop: 10 }}>Itens críticos</div> : null}
+          {inventory?.lowStock?.slice(0, 8).map((i) => (
+            <div key={i.id} className="reports-row"><span>{i.name}</span><strong>{i.currentQty} / mín {i.minQty}</strong></div>
+          ))}
+        </section>
       </div>
-
-      <section className="reports-panel">
-        <h3>Estoque</h3>
-        <div className="reports-row"><span>Itens totais</span><strong>{inventory?.totalItems || 0}</strong></div>
-        <div className="reports-row"><span>Baixo estoque</span><strong>{inventory?.lowStockCount || 0}</strong></div>
-
-        {inventory?.lowStock?.length ? <div className="reports-subtitle" style={{ marginTop: 10 }}>Itens críticos</div> : null}
-        {inventory?.lowStock?.slice(0, 10).map((i) => (
-          <div key={i.id} className="reports-row"><span>{i.name}</span><strong>{i.currentQty} / mín {i.minQty}</strong></div>
-        ))}
-      </section>
     </div>
   );
 }
