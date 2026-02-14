@@ -111,10 +111,22 @@ export function SettingsPage() {
       <form onSubmit={saveAgenda} style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
         <strong>Agenda</strong>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
-          <input type="number" min={0} max={23} placeholder="Início" value={agenda.workStartHour} onChange={(e) => setAgenda((v) => ({ ...v, workStartHour: Number(e.target.value) }))} />
-          <input type="number" min={1} max={24} placeholder="Fim" value={agenda.workEndHour} onChange={(e) => setAgenda((v) => ({ ...v, workEndHour: Number(e.target.value) }))} />
-          <input type="number" min={5} max={120} placeholder="Slot (min)" value={agenda.slotMinutes} onChange={(e) => setAgenda((v) => ({ ...v, slotMinutes: Number(e.target.value) }))} />
-          <input type="number" min={0} max={180} placeholder="Buffer (min)" value={agenda.bufferMinutes} onChange={(e) => setAgenda((v) => ({ ...v, bufferMinutes: Number(e.target.value) }))} />
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Hora inicial</small>
+            <input type="number" min={0} max={23} value={agenda.workStartHour} onChange={(e) => setAgenda((v) => ({ ...v, workStartHour: Number(e.target.value) }))} />
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Hora final</small>
+            <input type="number" min={1} max={24} value={agenda.workEndHour} onChange={(e) => setAgenda((v) => ({ ...v, workEndHour: Number(e.target.value) }))} />
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Intervalo do slot (min)</small>
+            <input type="number" min={5} max={120} value={agenda.slotMinutes} onChange={(e) => setAgenda((v) => ({ ...v, slotMinutes: Number(e.target.value) }))} />
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Buffer entre consultas (min)</small>
+            <input type="number" min={0} max={180} value={agenda.bufferMinutes} onChange={(e) => setAgenda((v) => ({ ...v, bufferMinutes: Number(e.target.value) }))} />
+          </div>
         </div>
         <button type="submit">Salvar agenda</button>
       </form>
