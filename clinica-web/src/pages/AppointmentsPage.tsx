@@ -1,11 +1,14 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
+type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED';
+
 type Appointment = {
   id: string;
   startsAt: string;
   endsAt: string;
-  status: string;
+  status: AppointmentStatus;
+  notes?: string;
   client?: { fullName?: string };
   service?: { name?: string };
   professional?: { name?: string };
@@ -19,8 +22,21 @@ type CalendarResponse = {
 type Client = { id: string; fullName: string };
 type Service = { id: string; name: string; durationMinutes: number };
 
+const statusLabel: Record<AppointmentStatus, string> = {
+  SCHEDULED: 'Agendada',
+  CONFIRMED: 'Confirmada',
+  DONE: 'Concluída',
+  CANCELLED: 'Cancelada',
+};
+
 function todayISODate() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function toLocalDateTimeInput(iso: string) {
+  const d = new Date(iso);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
 }
 
 export function AppointmentsPage() {
@@ -32,6 +48,10 @@ export function AppointmentsPage() {
 
   const [clients, setClients] = useState<Client[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+
+  const [statusDraft, setStatusDraft] = useState<Record<string, AppointmentStatus>>({});
+  const [rescheduleDraft, setRescheduleDraft] = useState<Record<string, string>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     clientId: '',
@@ -80,6 +100,17 @@ export function AppointmentsPage() {
 
   const appointments = useMemo(() => Object.values(data.grouped).flat(), [data.grouped]);
 
+  useEffect(() => {
+    const s: Record<string, AppointmentStatus> = {};
+    const r: Record<string, string> = {};
+    for (const a of appointments) {
+      s[a.id] = a.status;
+      r[a.id] = toLocalDateTimeInput(a.startsAt);
+    }
+    setStatusDraft(s);
+    setRescheduleDraft(r);
+  }, [appointments]);
+
   async function submit(e: FormEvent) {
     e.preventDefault();
     setMsg('');
@@ -100,6 +131,40 @@ export function AppointmentsPage() {
       if (typeof conflictMsg === 'string') setMsg(conflictMsg);
       else if (Array.isArray(conflictMsg)) setMsg(conflictMsg.join(', '));
       else setMsg('Erro ao criar consulta');
+    }
+  }
+
+  async function updateStatus(appointmentId: string) {
+    try {
+      setSavingId(appointmentId);
+      const status = statusDraft[appointmentId];
+      await api.patch(`/appointments/${appointmentId}/status`, { status });
+      setMsg('Status atualizado com sucesso.');
+      await load();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao atualizar status');
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function reschedule(appointmentId: string) {
+    try {
+      setSavingId(appointmentId);
+      const startsAt = rescheduleDraft[appointmentId];
+      await api.patch(`/appointments/${appointmentId}/reschedule`, {
+        startsAt: new Date(startsAt).toISOString(),
+        useServiceDuration: true,
+      });
+      setMsg('Consulta reagendada com sucesso.');
+      await load();
+    } catch (err: any) {
+      const conflictMsg = err?.response?.data?.message;
+      if (typeof conflictMsg === 'string') setMsg(conflictMsg);
+      else if (Array.isArray(conflictMsg)) setMsg(conflictMsg.join(', '));
+      else setMsg('Erro ao reagendar consulta');
+    } finally {
+      setSavingId(null);
     }
   }
 
@@ -163,10 +228,10 @@ export function AppointmentsPage() {
       {error ? <small>{error}</small> : null}
       {msg ? <small>{msg}</small> : null}
 
-      <div style={{ display: 'grid', gap: 8 }}>
+      <div style={{ display: 'grid', gap: 10 }}>
         {appointments.length === 0 && !loading ? <div>Nenhuma consulta neste dia.</div> : null}
         {appointments.map((a) => (
-          <div key={a.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
+          <div key={a.id} style={{ border: '1px solid #f0abfc', borderRadius: 12, padding: 12, display: 'grid', gap: 8 }}>
             <strong>
               {new Date(a.startsAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} -{' '}
               {new Date(a.endsAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -174,7 +239,33 @@ export function AppointmentsPage() {
             <div>Cliente: {a.client?.fullName || '-'}</div>
             <div>Serviço: {a.service?.name || '-'}</div>
             <div>Profissional: {a.professional?.name || '-'}</div>
-            <div>Status: {a.status}</div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center' }}>
+              <select
+                value={statusDraft[a.id] || a.status}
+                onChange={(e) => setStatusDraft((prev) => ({ ...prev, [a.id]: e.target.value as AppointmentStatus }))}
+              >
+                {Object.keys(statusLabel).map((st) => (
+                  <option key={st} value={st}>
+                    {statusLabel[st as AppointmentStatus]}
+                  </option>
+                ))}
+              </select>
+              <button type="button" onClick={() => void updateStatus(a.id)} disabled={savingId === a.id}>
+                Atualizar status
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center' }}>
+              <input
+                type="datetime-local"
+                value={rescheduleDraft[a.id] || ''}
+                onChange={(e) => setRescheduleDraft((prev) => ({ ...prev, [a.id]: e.target.value }))}
+              />
+              <button type="button" onClick={() => void reschedule(a.id)} disabled={savingId === a.id}>
+                Reagendar
+              </button>
+            </div>
           </div>
         ))}
       </div>
