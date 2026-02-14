@@ -7,12 +7,13 @@ import { ClientsPage } from './pages/ClientsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { BirthdaysPage } from './pages/BirthdaysPage';
 import { PackagesPage } from './pages/PackagesPage';
-import { SectionPage } from './pages/SectionPage';
 import { ServicesPage } from './pages/ServicesPage';
 import { TasksPage } from './pages/TasksPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ReferralsPage } from './pages/ReferralsPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 
 export default function App() {
   return (
@@ -34,8 +35,8 @@ export default function App() {
         <Route path="/financeiro" element={<PackagesPage />} />
         <Route path="/estoque" element={<InventoryPage />} />
         <Route path="/relatorios" element={<ReportsPage />} />
-        <Route path="/indicacoes" element={<SectionPage title="Indicações" hint="Indicações de clientes e taxa de conversão." />} />
-        <Route path="/notificacoes" element={<SectionPage title="Notificações" hint="Logs e disparos de WhatsApp." />} />
+        <Route path="/indicacoes" element={<ReferralsPage />} />
+        <Route path="/notificacoes" element={<NotificationsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/painel" replace />} />
       </Route>
