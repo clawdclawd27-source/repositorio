@@ -157,25 +157,34 @@ export function PackagesPage() {
         </select>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-          <input
-            type="number"
-            min={1}
-            value={createForm.totalSessions}
-            onChange={(e) => setCreateForm((f) => ({ ...f, totalSessions: Number(e.target.value) }))}
-          />
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            value={createForm.totalPrice}
-            onChange={(e) => setCreateForm((f) => ({ ...f, totalPrice: Number(e.target.value) }))}
-          />
-          <input
-            type="number"
-            min={1}
-            value={createForm.validityDays}
-            onChange={(e) => setCreateForm((f) => ({ ...f, validityDays: Number(e.target.value) }))}
-          />
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Pacotes (sessões)</small>
+            <input
+              type="number"
+              min={1}
+              value={createForm.totalSessions}
+              onChange={(e) => setCreateForm((f) => ({ ...f, totalSessions: Number(e.target.value) }))}
+            />
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Valor (R$)</small>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={createForm.totalPrice}
+              onChange={(e) => setCreateForm((f) => ({ ...f, totalPrice: Number(e.target.value) }))}
+            />
+          </div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <small>Dias válido</small>
+            <input
+              type="number"
+              min={1}
+              value={createForm.validityDays}
+              onChange={(e) => setCreateForm((f) => ({ ...f, validityDays: Number(e.target.value) }))}
+            />
+          </div>
         </div>
 
         <button type="submit">Criar pacote</button>
@@ -186,10 +195,10 @@ export function PackagesPage() {
           <div key={p.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
             <strong>{p.name}</strong> ({p.service?.name || 'serviço'})
             <div>
-              Sessões: {p.totalSessions} | Validade: {p.validityDays} dias
+              Pacotes (sessões): {p.totalSessions} | Dias válido: {p.validityDays}
             </div>
             <div>
-              Preço: R$ {Number(p.totalPrice).toFixed(2)} | {p.active ? 'Ativo' : 'Inativo'}
+              Valor: R$ {Number(p.totalPrice).toFixed(2)} | {p.active ? 'Ativo' : 'Inativo'}
             </div>
             <small>ID: {p.id}</small>
             <div style={{ marginTop: 8 }}>
