@@ -14,6 +14,10 @@ type ListResponse = { items: Service[]; total: number };
 
 const initialForm = { name: '', description: '', durationMinutes: 60, basePrice: 0, active: true };
 
+function money(v: string | number) {
+  return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 export function ServicesPage() {
   const [items, setItems] = useState<Service[]>([]);
   const [form, setForm] = useState(initialForm);
@@ -105,13 +109,23 @@ export function ServicesPage() {
 
       {msg ? <small>{msg}</small> : null}
 
-      <div style={{ display: 'grid', gap: 8 }}>
+      <div style={{ display: 'grid', gap: 10 }}>
         {items.map((s) => (
-          <div key={s.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
-            <strong>{s.name}</strong> {s.active ? '✅' : '⛔'}
-            <div>Duração: {s.durationMinutes} min</div>
-            <div>Preço: R$ {Number(s.basePrice).toFixed(2)}</div>
-            <button type="button" onClick={() => startEdit(s)} style={{ marginTop: 8 }}>Editar</button>
+          <div key={s.id} style={{ border: '1px solid #f0abfc', borderRadius: 12, padding: 12, display: 'grid', gap: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong>{s.name}</strong>
+              <span>{s.active ? '✅ Ativo' : '⛔ Inativo'}</span>
+            </div>
+
+            <div style={{ color: '#6b5a7a', fontSize: 13 }}>Duração: {s.durationMinutes} min</div>
+
+            <div style={{ fontWeight: 700, color: '#7c3aed' }}>
+              {s.description?.trim() ? s.description : `Preço base: ${money(s.basePrice)}`}
+            </div>
+
+            <div style={{ color: '#7b6c89', fontSize: 13 }}>Valor base técnico: {money(s.basePrice)}</div>
+
+            <button type="button" onClick={() => startEdit(s)} style={{ marginTop: 6, justifySelf: 'start' }}>Editar</button>
           </div>
         ))}
       </div>
