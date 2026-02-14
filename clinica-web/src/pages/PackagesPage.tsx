@@ -95,6 +95,20 @@ export function PackagesPage() {
     }
   }
 
+  async function removePackage(id: string) {
+    const confirmed = window.confirm('Deseja apagar este pacote? Essa ação não pode ser desfeita.');
+    if (!confirmed) return;
+
+    setMsg('');
+    try {
+      await api.delete(`/packages/${id}`);
+      setMsg('Pacote apagado com sucesso.');
+      await loadPackages();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao apagar pacote');
+    }
+  }
+
   async function loadBalancesAndConsumptions(clientId: string) {
     if (!clientId) return;
     setSelectedClientId(clientId);
@@ -178,6 +192,11 @@ export function PackagesPage() {
               Preço: R$ {Number(p.totalPrice).toFixed(2)} | {p.active ? 'Ativo' : 'Inativo'}
             </div>
             <small>ID: {p.id}</small>
+            <div style={{ marginTop: 8 }}>
+              <button type="button" onClick={() => void removePackage(p.id)} style={{ background: '#be123c' }}>
+                Apagar pacote
+              </button>
+            </div>
           </div>
         ))}
       </div>

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientPackageStatus, Prisma, UserRole } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -139,6 +139,29 @@ export class PackagesService {
     });
 
     return sold;
+  }
+
+  async remove(id: string, actor: { id: string; role: UserRole }) {
+    const exists = await this.prisma.treatmentPackage.findUnique({ where: { id } });
+    if (!exists) throw new NotFoundException('Pacote não encontrado');
+
+    const soldCount = await this.prisma.clientPackage.count({ where: { packageId: id } });
+    if (soldCount > 0) {
+      throw new BadRequestException('Este pacote já possui vendas e não pode ser apagado. Desative o pacote em vez de excluir.');
+    }
+
+    await this.prisma.treatmentPackage.delete({ where: { id } });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'DELETE_TREATMENT_PACKAGE',
+      entityType: 'TREATMENT_PACKAGE',
+      entityId: id,
+      sourcePlatform: 'API',
+    });
+
+    return { ok: true };
   }
 
   async clientBalances(clientId: string) {
