@@ -17,7 +17,7 @@ const shortcuts: Shortcut[] = [
   { label: 'Serviços', subtitle: 'Catálogo e preços', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
   { label: 'Financeiro', subtitle: 'Pacotes, vendas e saldos', cta: 'Abrir', path: '/financeiro', icon: '💳', enabled: true },
   { label: 'Estoque', subtitle: 'Produtos, consumo e alertas', cta: 'Abrir', path: '/estoque', icon: '📦', enabled: true },
-  { label: 'Relatórios', subtitle: 'Indicadores de negócio', cta: 'Em breve', path: '/relatorios', icon: '📊', enabled: false },
+  { label: 'Relatórios', subtitle: 'Indicadores de negócio', cta: 'Abrir', path: '/relatorios', icon: '📊', enabled: true },
   { label: 'Indicações', subtitle: 'Indicações e conversão', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
   { label: 'Notificações', subtitle: 'Histórico de envios', cta: 'Abrir', path: '/notificacoes', icon: '🔔', enabled: true },
   { label: 'Configurações', subtitle: 'Preferências do sistema', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
