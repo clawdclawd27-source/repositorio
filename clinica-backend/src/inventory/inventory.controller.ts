@@ -49,4 +49,10 @@ export class InventoryController {
   addMovement(@Body() dto: CreateStockMovementDto, @Req() req: any) {
     return this.inventoryService.addMovement(dto, req.user);
   }
+
+  @Get('summary')
+  @Permission('inventory', 'view')
+  summary() {
+    return this.inventoryService.summary();
+  }
 }

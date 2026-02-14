@@ -81,7 +81,6 @@ export class CreateStockMovementDto {
   type!: StockMovementType;
 
   @IsNumber()
-  @Min(0.001)
   quantity!: number;
 
   @IsOptional()
