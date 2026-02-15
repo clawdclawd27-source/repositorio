@@ -347,22 +347,36 @@ small { color: #be123c; }
   }
 
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .dashboard-tile {
-    min-height: 140px;
-    padding: 12px;
+    min-height: 120px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .tile-icon {
+    width: 34px;
+    height: 34px;
   }
 
   .tile-content h3 {
-    font-size: 20px;
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .tile-content p {
+    font-size: 11px;
+    margin-top: 2px;
   }
 
   .tile-cta {
     width: 100%;
     text-align: left;
-    padding-top: 4px;
+    padding-top: 2px;
+    font-size: 12px;
   }
 
   .portal-grid,
@@ -379,7 +393,13 @@ small { color: #be123c; }
 
 @media (max-width: 480px) {
   .topbar-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .topbar-actions button {
+    font-size: 12px;
+    padding: 8px 6px;
   }
 
   .dashboard-logo-img {
@@ -389,5 +409,14 @@ small { color: #be123c; }
 
   .dashboard-header h1 {
     font-size: 20px;
+  }
+
+  .dashboard-grid {
+    gap: 6px;
+  }
+
+  .dashboard-tile {
+    min-height: 110px;
+    padding: 8px;
   }
 }
