@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RoleRoute } from './components/RoleRoute';
 import { LoginPage } from './pages/LoginPage';
 import { AppointmentsPage } from './pages/AppointmentsPage';
 import { ClientsPage } from './pages/ClientsPage';
@@ -28,18 +29,21 @@ export default function App() {
         }
       >
         <Route path="/painel" element={<DashboardPage />} />
-        <Route path="/clientes" element={<ClientsPage />} />
-        <Route path="/consultas" element={<AppointmentsPage />} />
-        <Route path="/tarefas" element={<TasksPage />} />
-        <Route path="/aniversarios" element={<BirthdaysPage />} />
+
         <Route path="/servicos" element={<ServicesPage />} />
-        <Route path="/financeiro" element={<PackagesPage />} />
-        <Route path="/estoque" element={<InventoryPage />} />
-        <Route path="/relatorios" element={<ReportsPage />} />
         <Route path="/indicacoes" element={<ReferralsPage />} />
         <Route path="/notificacoes" element={<NotificationsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
         <Route path="/portal-cliente" element={<PortalClientPage />} />
+
+        <Route path="/clientes" element={<RoleRoute allow={['ADMIN', 'OWNER']}><ClientsPage /></RoleRoute>} />
+        <Route path="/consultas" element={<RoleRoute allow={['ADMIN', 'OWNER']}><AppointmentsPage /></RoleRoute>} />
+        <Route path="/tarefas" element={<RoleRoute allow={['ADMIN', 'OWNER']}><TasksPage /></RoleRoute>} />
+        <Route path="/aniversarios" element={<RoleRoute allow={['ADMIN', 'OWNER']}><BirthdaysPage /></RoleRoute>} />
+        <Route path="/financeiro" element={<RoleRoute allow={['ADMIN', 'OWNER']}><PackagesPage /></RoleRoute>} />
+        <Route path="/estoque" element={<RoleRoute allow={['ADMIN', 'OWNER']}><InventoryPage /></RoleRoute>} />
+        <Route path="/relatorios" element={<RoleRoute allow={['ADMIN', 'OWNER']}><ReportsPage /></RoleRoute>} />
+
         <Route path="*" element={<Navigate to="/painel" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
