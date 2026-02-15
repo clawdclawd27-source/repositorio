@@ -57,8 +57,6 @@ export function AppointmentsPage() {
     clientId: '',
     serviceId: '',
     startsAt: '',
-    professionalId: '',
-    notes: '',
   });
 
   async function load() {
@@ -119,12 +117,10 @@ export function AppointmentsPage() {
         clientId: form.clientId,
         serviceId: form.serviceId,
         startsAt: new Date(form.startsAt).toISOString(),
-        professionalId: form.professionalId.trim() || undefined,
-        notes: form.notes.trim() || undefined,
         useServiceDuration: true,
       });
       setMsg('Consulta criada com sucesso.');
-      setForm({ clientId: '', serviceId: '', startsAt: '', professionalId: '', notes: '' });
+      setForm({ clientId: '', serviceId: '', startsAt: '' });
       await load();
     } catch (err: any) {
       const conflictMsg = err?.response?.data?.message;
@@ -211,16 +207,6 @@ export function AppointmentsPage() {
           value={form.startsAt}
           onChange={(e) => setForm((f) => ({ ...f, startsAt: e.target.value }))}
           required
-        />
-        <input
-          placeholder="ID profissional (opcional)"
-          value={form.professionalId}
-          onChange={(e) => setForm((f) => ({ ...f, professionalId: e.target.value }))}
-        />
-        <input
-          placeholder="Observações"
-          value={form.notes}
-          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
         />
         <button type="submit">Criar consulta</button>
       </form>
