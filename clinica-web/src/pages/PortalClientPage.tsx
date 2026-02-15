@@ -45,6 +45,17 @@ export function PortalClientPage() {
 
       {msg ? <small>{msg}</small> : null}
 
+      <div className="portal-clinic-banner">
+        <div>
+          <strong>Clínica Emanuelle Ferreira</strong>
+          <div>Rua Marte, 2294 · Sítio Cercado · Curitiba</div>
+          <div>WhatsApp: (41) 99875-6850</div>
+        </div>
+        <a className="portal-whats-btn" href="https://wa.me/5541998756850" target="_blank" rel="noreferrer">
+          Agendar pelo WhatsApp
+        </a>
+      </div>
+
       {me ? (
         <div className="portal-me">
           <strong>{me.fullName}</strong>

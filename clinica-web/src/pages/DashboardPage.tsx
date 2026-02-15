@@ -27,8 +27,8 @@ const clinicShortcuts: Shortcut[] = [
 
 const clientShortcuts: Shortcut[] = [
   { label: 'Portal Cliente', subtitle: 'Minha visão pessoal', cta: 'Abrir', path: '/portal-cliente', icon: '🙍', enabled: true },
-  { label: 'Serviços', subtitle: 'Catálogo da clínica', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
-  { label: 'Indicações', subtitle: 'Minhas indicações', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
+  { label: 'Serviços', subtitle: 'Facial e corporal com equipe especializada', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
+  { label: 'Indicações', subtitle: 'Indique e acompanhe o status', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
   { label: 'Configurações', subtitle: 'Ajustes da conta', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
 ];
 
