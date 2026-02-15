@@ -10,6 +10,14 @@ type LogItem = {
   createdAt: string;
 };
 
+type TaskItem = {
+  id: string;
+  title: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  dueDate?: string;
+};
+
 function normalizePhone(phone: string) {
   return phone.replace(/\D/g, '');
 }
@@ -35,6 +43,7 @@ function friendlyNotificationError(raw?: string) {
 
 export function NotificationsPage() {
   const [logs, setLogs] = useState<LogItem[]>([]);
+  const [taskAlerts, setTaskAlerts] = useState<TaskItem[]>([]);
   const [msg, setMsg] = useState('');
   const [form, setForm] = useState({ phone: '', message: 'Olá! Aqui é a Clínica Emanuelle Ferreira 💜 Mensagem de teste.' });
 
@@ -42,8 +51,13 @@ export function NotificationsPage() {
 
   async function load(showSuccess = false) {
     try {
-      const { data } = await api.get('/notifications/logs');
-      setLogs(data || []);
+      const [l, t] = await Promise.all([
+        api.get('/notifications/logs'),
+        api.get('/tasks').catch(() => ({ data: [] })),
+      ]);
+      setLogs(l.data || []);
+      const tasks = (t.data || []) as TaskItem[];
+      setTaskAlerts(tasks.filter((x) => x.status !== 'DONE' && x.status !== 'CANCELLED'));
       if (showSuccess) {
         setMsg('Logs atualizados com sucesso.');
       }
@@ -102,6 +116,19 @@ export function NotificationsPage() {
       </div>
 
       {msg ? <small>{msg}</small> : null}
+
+      <div style={{ display: 'grid', gap: 8 }}>
+        <strong>Alertas de tarefas (painel administrativo)</strong>
+        {taskAlerts.length === 0 ? <div>Nenhuma tarefa pendente.</div> : null}
+        {taskAlerts.map((t) => (
+          <div key={t.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
+            <div><strong>{t.title}</strong></div>
+            <div>Prioridade: {t.priority === 'HIGH' ? 'Alta' : t.priority === 'MEDIUM' ? 'Média' : 'Baixa'}</div>
+            <div>Status: {t.status === 'OPEN' ? 'Aberta' : t.status === 'IN_PROGRESS' ? 'Em andamento' : t.status}</div>
+            <div>Prazo: {t.dueDate ? new Date(t.dueDate).toLocaleString('pt-BR') : '-'}</div>
+          </div>
+        ))}
+      </div>
 
       <div style={{ display: 'grid', gap: 8 }}>
         {logs.map((l) => (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
 type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
@@ -28,12 +28,29 @@ const priorityLabel: Record<TaskPriority, string> = {
   HIGH: 'Alta',
 };
 
+const initialCreate = {
+  title: '',
+  description: '',
+  priority: 'MEDIUM' as TaskPriority,
+  dueDate: '',
+};
+
+function toLocalInput(iso?: string) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+
 export function TasksPage() {
   const [items, setItems] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [query, setQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'ALL' | TaskStatus>('ALL');
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState(initialCreate);
 
   async function load() {
     setLoading(true);
@@ -61,6 +78,24 @@ export function TasksPage() {
     });
   }, [items, query, filterStatus]);
 
+  async function createTask(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.post('/tasks', {
+        title: createForm.title,
+        description: createForm.description || undefined,
+        priority: createForm.priority,
+        dueDate: createForm.dueDate ? new Date(createForm.dueDate).toISOString() : undefined,
+      });
+      setCreateForm(initialCreate);
+      setShowCreate(false);
+      setMsg('Tarefa criada com sucesso.');
+      await load();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao criar tarefa');
+    }
+  }
+
   async function save(task: Task) {
     setMsg('');
     try {
@@ -78,6 +113,16 @@ export function TasksPage() {
     }
   }
 
+  async function markResolved(task: Task) {
+    try {
+      await api.patch(`/tasks/${task.id}`, { status: 'DONE' });
+      setMsg(`Tarefa "${task.title}" marcada como concluída.`);
+      await load();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao concluir tarefa');
+    }
+  }
+
   function updateLocal(id: string, patch: Partial<Task>) {
     setItems((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   }
@@ -87,10 +132,30 @@ export function TasksPage() {
       <div className="tasks-head card">
         <div>
           <h2>Tarefas</h2>
-          <p>Painel administrativo para teste e edição em fluxo real.</p>
+          <p>Painel administrativo com criação, prioridade e conclusão rápida.</p>
         </div>
-        <button onClick={() => void load()} disabled={loading}>{loading ? 'Carregando...' : 'Atualizar lista'}</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => setShowCreate((v) => !v)}>{showCreate ? 'Fechar criação' : 'Nova tarefa'}</button>
+          <button onClick={() => void load()} disabled={loading}>{loading ? 'Carregando...' : 'Atualizar lista'}</button>
+        </div>
       </div>
+
+      {showCreate ? (
+        <form className="card" onSubmit={createTask} style={{ display: 'grid', gap: 8 }}>
+          <strong>Criação de tarefa</strong>
+          <input placeholder="Nome da tarefa" value={createForm.title} onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))} required />
+          <textarea placeholder="Descrição" value={createForm.description} onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))} rows={2} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <input type="datetime-local" value={createForm.dueDate} onChange={(e) => setCreateForm((f) => ({ ...f, dueDate: e.target.value }))} />
+            <select value={createForm.priority} onChange={(e) => setCreateForm((f) => ({ ...f, priority: e.target.value as TaskPriority }))}>
+              <option value="HIGH">Prioridade Alta (Vermelho)</option>
+              <option value="MEDIUM">Prioridade Média (Amarelo)</option>
+              <option value="LOW">Prioridade Baixa (Verde)</option>
+            </select>
+          </div>
+          <button type="submit">Criar tarefa</button>
+        </form>
+      ) : null}
 
       <div className="tasks-toolbar card">
         <input
@@ -141,15 +206,18 @@ export function TasksPage() {
               </select>
 
               <input
-                type="date"
-                value={t.dueDate ? new Date(t.dueDate).toISOString().slice(0, 10) : ''}
-                onChange={(e) => updateLocal(t.id, { dueDate: e.target.value ? `${e.target.value}T12:00:00.000Z` : undefined })}
+                type="datetime-local"
+                value={toLocalInput(t.dueDate)}
+                onChange={(e) => updateLocal(t.id, { dueDate: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
               />
             </div>
 
             <div className="task-footer">
-              <small>Cliente: {t.client?.fullName || '-'} · Responsável: {t.assignedTo?.name || '-'}</small>
-              <button onClick={() => void save(t)}>Salvar edição</button>
+              <small>Cliente: {t.client?.fullName || '-'} · Responsável: {t.assignedTo?.name || '-'} </small>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => void markResolved(t)} type="button">Resolvido</button>
+                <button onClick={() => void save(t)} type="button">Salvar edição</button>
+              </div>
             </div>
           </article>
         ))}
