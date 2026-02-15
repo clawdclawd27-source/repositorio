@@ -23,6 +23,7 @@ const clinicShortcuts: Shortcut[] = [
   { label: 'Notificações', subtitle: 'Histórico de envios', cta: 'Abrir', path: '/notificacoes', icon: '🔔', enabled: true },
   { label: 'Configurações', subtitle: 'Preferências do sistema', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
   { label: 'Portal Cliente', subtitle: 'Visão do cliente final', cta: 'Abrir', path: '/portal-cliente', icon: '🙍', enabled: true },
+  { label: 'Ajuda Operacional', subtitle: 'POP diário da equipe', cta: 'Abrir', path: '/ajuda-operacional', icon: '🧭', enabled: true },
 ];
 
 const clientShortcuts: Shortcut[] = [
