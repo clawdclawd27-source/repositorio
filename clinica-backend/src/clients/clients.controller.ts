@@ -5,7 +5,7 @@ import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { CreateClientDto, UpdateClientDto } from './dto';
+import { CreateClientDto, UpdateClientAccessRoleDto, UpdateClientDto } from './dto';
 import { ClientsService } from './clients.service';
 
 @Controller('clients')
@@ -38,6 +38,13 @@ export class ClientsController {
   @Permission('clients', 'edit')
   update(@Param('id') id: string, @Body() dto: UpdateClientDto, @Req() req: any) {
     return this.clientsService.update(id, dto, req.user);
+  }
+
+  @Patch(':id/access-role')
+  @Roles(Role.ADMIN, Role.OWNER)
+  @Permission('clients', 'edit')
+  updateAccessRole(@Param('id') id: string, @Body() dto: UpdateClientAccessRoleDto, @Req() req: any) {
+    return this.clientsService.updateAccessRole(id, dto.role, req.user);
   }
 
   @Delete(':id')

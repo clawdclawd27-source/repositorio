@@ -20,7 +20,14 @@ export class ClientsService {
   ) {}
 
   findAll() {
-    return this.prisma.client.findMany({ orderBy: { createdAt: 'desc' } });
+    return this.prisma.client.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        accountUser: {
+          select: { id: true, email: true, role: true, isActive: true },
+        },
+      },
+    });
   }
 
   findOne(id: string) {
@@ -64,7 +71,7 @@ export class ClientsService {
             phone: dto.phone,
             passwordHash,
             role,
-            ...(role === UserRole.CLIENT ? { clientProfileId: client.id } : {}),
+            clientProfileId: client.id,
           },
         });
       }
@@ -114,6 +121,43 @@ export class ClientsService {
     });
 
     return updated;
+  }
+
+  async updateAccessRole(id: string, role: UserRole, actor: { id: string; role: UserRole }) {
+    const existing = await this.prisma.client.findUnique({
+      where: { id },
+      include: { accountUser: true },
+    });
+    if (!existing) throw new NotFoundException('Cliente não encontrado');
+
+    const account = existing.accountUser || (existing.email
+      ? await this.prisma.user.findUnique({ where: { email: existing.email } })
+      : null);
+
+    if (!account) {
+      throw new BadRequestException('Este cliente não possui login vinculado.');
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: account.id },
+      data: {
+        role,
+        clientProfileId: existing.id,
+      },
+      select: { id: true, email: true, role: true },
+    });
+
+    await this.audit.log({
+      actorUserId: actor.id,
+      actorRole: actor.role,
+      action: 'UPDATE_CLIENT_ACCESS_ROLE',
+      entityType: 'USER',
+      entityId: updatedUser.id,
+      sourcePlatform: 'API',
+      details: { clientId: existing.id, role },
+    });
+
+    return updatedUser;
   }
 
   async remove(id: string, actor: { id: string; role: UserRole }) {

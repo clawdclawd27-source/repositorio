@@ -8,6 +8,7 @@ type Client = {
   email?: string;
   cpf?: string;
   birthDate?: string;
+  accountUser?: { id: string; email?: string; role?: 'CLIENT' | 'ADMIN' | 'OWNER'; isActive?: boolean };
 };
 
 type Appointment = {
@@ -66,6 +67,7 @@ export function ClientsPage() {
 
   const [apptDraft, setApptDraft] = useState<Record<string, { startsAt: string; status: Appointment['status']; notes: string }>>({});
   const [pkgDraft, setPkgDraft] = useState<Record<string, { remainingSessions: number; status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' }>>({});
+  const [roleDraft, setRoleDraft] = useState<Record<string, 'CLIENT' | 'OWNER' | 'ADMIN'>>({});
 
   async function load() {
     const { data } = await api.get<Client[]>('/clients');
@@ -75,6 +77,14 @@ export function ClientsPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    const next: Record<string, 'CLIENT' | 'OWNER' | 'ADMIN'> = {};
+    items.forEach((c) => {
+      next[c.id] = (c.accountUser?.role as 'CLIENT' | 'OWNER' | 'ADMIN') || 'CLIENT';
+    });
+    setRoleDraft(next);
+  }, [items]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -146,6 +156,17 @@ export function ClientsPage() {
       await load();
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao apagar cliente');
+    }
+  }
+
+  async function saveAccessRole(clientId: string) {
+    try {
+      const role = roleDraft[clientId];
+      await api.patch(`/clients/${clientId}/access-role`, { role });
+      setMsg('Perfil de acesso atualizado com sucesso.');
+      await load();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao atualizar perfil de acesso');
     }
   }
 
@@ -300,6 +321,16 @@ export function ClientsPage() {
               <div>E-mail: {c.email || '-'}</div>
               <div>CPF: {c.cpf || '-'}</div>
               <div>Data de nascimento: {dateOnlyToPtBr(c.birthDate)}</div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, alignItems: 'center' }}>
+              <select value={roleDraft[c.id] || 'CLIENT'} onChange={(e) => setRoleDraft((prev) => ({ ...prev, [c.id]: e.target.value as 'CLIENT' | 'OWNER' | 'ADMIN' }))}>
+                <option value="CLIENT">Cliente</option>
+                <option value="ADMIN">Funcionário</option>
+                <option value="OWNER">Owner</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+              <button type="button" onClick={() => void saveAccessRole(c.id)}>Salvar perfil</button>
             </div>
 
             <div className="client-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

@@ -8,13 +8,14 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState('');
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
     try {
-      await login(email, password);
+      await login(email, password, remember);
       navigate('/painel');
     } catch {
       setError('Falha no login. Verifique usuário e senha.');
@@ -41,12 +42,17 @@ export function LoginPage() {
           </div>
         </label>
 
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+          Manter conectado
+        </label>
+
         {error && <small>{error}</small>}
         <button type="submit">Entrar</button>
 
         <div className="login-links">
           <a href="#" onClick={(e) => e.preventDefault()}>Esqueci minha senha</a>
-          <a href="#" onClick={(e) => e.preventDefault()}>Cadastrar usuário</a>
+          <span style={{ color: '#7b6c89', fontSize: 13 }}>Cadastro somente pela clínica</span>
         </div>
       </form>
     </div>

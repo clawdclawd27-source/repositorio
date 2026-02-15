@@ -52,3 +52,8 @@ export class CreateClientDto {
 }
 
 export class UpdateClientDto extends CreateClientDto {}
+
+export class UpdateClientAccessRoleDto {
+  @IsEnum(UserRole)
+  role!: UserRole;
+}
