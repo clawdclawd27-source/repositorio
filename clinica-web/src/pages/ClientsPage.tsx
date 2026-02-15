@@ -27,7 +27,18 @@ type ClientPackage = {
   package?: { name?: string };
 };
 
-const initialForm = { fullName: '', phone: '', email: '', cpf: '', birthDate: '' };
+type AccessRole = 'CLIENT' | 'OWNER' | 'FUNCIONARIO' | 'ADMIN';
+
+const initialForm = {
+  fullName: '',
+  phone: '',
+  email: '',
+  cpf: '',
+  birthDate: '',
+  accessRole: 'CLIENT' as AccessRole,
+  loginEmail: '',
+  loginPassword: '',
+};
 
 export function ClientsPage() {
   const [items, setItems] = useState<Client[]>([]);
@@ -55,7 +66,29 @@ export function ClientsPage() {
     e.preventDefault();
     setMsg('');
     try {
-      const payload = { ...form, birthDate: form.birthDate || undefined };
+      const payload: any = {
+        fullName: form.fullName,
+        phone: form.phone,
+        email: form.email,
+        cpf: form.cpf,
+        birthDate: form.birthDate || undefined,
+      };
+
+      if (!editingId && form.accessRole === 'CLIENT') {
+        if (!form.loginEmail || !form.loginPassword) {
+          setMsg('Para CLIENTE, preencha login e senha.');
+          return;
+        }
+        payload.accountRole = 'CLIENT';
+        payload.loginEmail = form.loginEmail;
+        payload.loginPassword = form.loginPassword;
+      }
+
+      if (!editingId && form.accessRole !== 'CLIENT' && form.loginEmail && form.loginPassword) {
+        payload.accountRole = form.accessRole === 'FUNCIONARIO' ? 'ADMIN' : form.accessRole;
+        payload.loginEmail = form.loginEmail;
+        payload.loginPassword = form.loginPassword;
+      }
       if (editingId) {
         await api.patch(`/clients/${editingId}`, payload);
         setMsg('Cliente atualizado.');
@@ -79,6 +112,9 @@ export function ClientsPage() {
       email: c.email || '',
       cpf: c.cpf || '',
       birthDate: c.birthDate ? new Date(c.birthDate).toISOString().slice(0, 10) : '',
+      accessRole: 'CLIENT',
+      loginEmail: '',
+      loginPassword: '',
     });
   }
 
@@ -211,6 +247,27 @@ export function ClientsPage() {
           <input placeholder="CPF" value={form.cpf} onChange={(e) => setForm((f) => ({ ...f, cpf: e.target.value }))} required />
           <input type="date" value={form.birthDate} onChange={(e) => setForm((f) => ({ ...f, birthDate: e.target.value }))} required />
         </div>
+
+        {!editingId ? (
+          <div style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
+            <strong>Acesso ao sistema</strong>
+            <select value={form.accessRole} onChange={(e) => setForm((f) => ({ ...f, accessRole: e.target.value as AccessRole }))}>
+              <option value="CLIENT">Cliente</option>
+              <option value="OWNER">Owner</option>
+              <option value="FUNCIONARIO">Funcionário</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+
+            {form.accessRole === 'CLIENT' ? (
+              <>
+                <input type="email" placeholder="Login (e-mail do cliente)" value={form.loginEmail} onChange={(e) => setForm((f) => ({ ...f, loginEmail: e.target.value }))} required />
+                <input type="password" placeholder="Senha do cliente" value={form.loginPassword} onChange={(e) => setForm((f) => ({ ...f, loginPassword: e.target.value }))} required />
+              </>
+            ) : (
+              <small style={{ color: '#7b6c89' }}>Para {form.accessRole}, login/senha são opcionais aqui.</small>
+            )}
+          </div>
+        ) : null}
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="submit">{editingId ? 'Salvar edição' : 'Criar cliente'}</button>
