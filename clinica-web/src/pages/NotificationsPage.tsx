@@ -40,10 +40,13 @@ export function NotificationsPage() {
 
   const phonePreview = useMemo(() => normalizePhone(form.phone), [form.phone]);
 
-  async function load() {
+  async function load(showSuccess = false) {
     try {
       const { data } = await api.get('/notifications/logs');
       setLogs(data || []);
+      if (showSuccess) {
+        setMsg('Logs atualizados com sucesso.');
+      }
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao carregar logs');
     }
@@ -95,7 +98,7 @@ export function NotificationsPage() {
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="button" onClick={() => void runNow('appointments')}>Rodar lembretes de consultas agora</button>
         <button type="button" onClick={() => void runNow('birthdays')}>Rodar aniversários agora</button>
-        <button type="button" onClick={() => void load()}>Atualizar logs</button>
+        <button type="button" onClick={() => void load(true)}>Atualizar logs</button>
       </div>
 
       {msg ? <small>{msg}</small> : null}
