@@ -42,7 +42,7 @@ type ProfessionalItem = {
   createdAt?: string;
 };
 
-type RoleOption = 'CLIENT' | 'OWNER' | 'ADMIN';
+type RoleOption = 'CLIENT' | 'OWNER' | 'FUNCIONARIO' | 'ADMIN';
 
 const defaultProfile: ClinicProfile = {
   clinicName: '', cnpj: '', address: '', whatsapp: '', email: '', logoUrl: '',
@@ -176,13 +176,16 @@ export function SettingsPage() {
           name: newProfessional.name,
           email: newProfessional.email,
           phone: newProfessional.phone,
-          role: newProfessional.role,
+          role: newProfessional.role === 'FUNCIONARIO' ? 'ADMIN' : newProfessional.role,
         };
         if (newProfessional.password?.trim()) payload.password = newProfessional.password;
         await api.patch(`/settings/professionals/${editingProfessionalId}`, payload);
         setMsg('Profissional atualizado com sucesso.');
       } else {
-        await api.post('/settings/professionals', newProfessional);
+        await api.post('/settings/professionals', {
+          ...newProfessional,
+          role: newProfessional.role === 'FUNCIONARIO' ? 'ADMIN' : newProfessional.role,
+        });
         setMsg('Profissional cadastrado com sucesso.');
       }
 
@@ -326,7 +329,8 @@ export function SettingsPage() {
             <select value={newProfessional.role} onChange={(e) => setNewProfessional((v) => ({ ...v, role: e.target.value as RoleOption }))}>
               <option value="CLIENT">Cliente</option>
               <option value="OWNER">Owner</option>
-              <option value="ADMIN">Funcionário</option>
+              <option value="FUNCIONARIO">Funcionário</option>
+              <option value="ADMIN">Admin</option>
             </select>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -339,7 +343,7 @@ export function SettingsPage() {
           {professionals.length === 0 ? <div>Nenhum profissional cadastrado.</div> : null}
           {professionals.map((pro) => (
             <div key={pro.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, display: 'grid', gap: 6 }}>
-              <div><strong>{pro.name}</strong> · {pro.role === 'ADMIN' ? 'Funcionário' : pro.role === 'OWNER' ? 'Owner' : 'Cliente'}</div>
+              <div><strong>{pro.name}</strong> · {pro.role === 'ADMIN' ? 'Admin / Funcionário' : pro.role === 'OWNER' ? 'Owner' : 'Cliente'}</div>
               <div>{pro.email} {pro.phone ? `· ${pro.phone}` : ''}</div>
               {pro.role !== 'OWNER' ? (
                 <div style={{ display: 'flex', gap: 8 }}>
