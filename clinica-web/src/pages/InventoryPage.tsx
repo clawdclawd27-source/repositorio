@@ -137,17 +137,42 @@ export function InventoryPage() {
       <form onSubmit={submitItem} style={{ display: 'grid', gap: 8 }}>
         <strong>{editingId ? 'Editar item' : 'Novo item'}</strong>
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 0.6fr', gap: 8 }}>
-          <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
-          <input placeholder="SKU" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} />
-          <input placeholder="Categoria" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
-          <input placeholder="Un" value={form.unit} onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))} />
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Nome do item</small>
+            <input placeholder="Ex.: Botox 100U" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>SKU (código interno)</small>
+            <input placeholder="Ex.: BTX-100U" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Categoria</small>
+            <input placeholder="Ex.: Injetáveis" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Unidade</small>
+            <input placeholder="un, ml, fr" value={form.unit} onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))} />
+          </label>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
-          <input type="number" step="0.001" min={0} placeholder="Qtd atual" value={form.currentQty} onChange={(e) => setForm((f) => ({ ...f, currentQty: Number(e.target.value) }))} />
-          <input type="number" step="0.001" min={0} placeholder="Qtd mínima" value={form.minQty} onChange={(e) => setForm((f) => ({ ...f, minQty: Number(e.target.value) }))} />
-          <input type="number" step="0.01" min={0} placeholder="Custo" value={form.costPrice} onChange={(e) => setForm((f) => ({ ...f, costPrice: Number(e.target.value) }))} />
-          <input type="number" step="0.01" min={0} placeholder="Venda" value={form.salePrice} onChange={(e) => setForm((f) => ({ ...f, salePrice: Number(e.target.value) }))} />
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Quantidade atual</small>
+            <input type="number" step="0.001" min={0} placeholder="0" value={form.currentQty} onChange={(e) => setForm((f) => ({ ...f, currentQty: Number(e.target.value) }))} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Quantidade mínima</small>
+            <input type="number" step="0.001" min={0} placeholder="0" value={form.minQty} onChange={(e) => setForm((f) => ({ ...f, minQty: Number(e.target.value) }))} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Preço de custo (R$)</small>
+            <input type="number" step="0.01" min={0} placeholder="0,00" value={form.costPrice} onChange={(e) => setForm((f) => ({ ...f, costPrice: Number(e.target.value) }))} />
+          </label>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <small>Preço de venda (R$)</small>
+            <input type="number" step="0.01" min={0} placeholder="0,00" value={form.salePrice} onChange={(e) => setForm((f) => ({ ...f, salePrice: Number(e.target.value) }))} />
+          </label>
         </div>
+        <small style={{ color: '#7b6c89' }}>SKU = código único interno do produto para facilitar busca, controle e conferência no estoque.</small>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="submit">{editingId ? 'Salvar item' : 'Criar item'}</button>
           {editingId ? <button type="button" onClick={() => { setEditingId(null); setForm(emptyItem); }}>Cancelar</button> : null}
