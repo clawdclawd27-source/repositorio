@@ -23,9 +23,9 @@ const statusLabel: Record<TaskStatus, string> = {
 };
 
 const priorityLabel: Record<TaskPriority, string> = {
-  LOW: 'Baixa',
-  MEDIUM: 'Média',
-  HIGH: 'Alta',
+  LOW: 'B',
+  MEDIUM: 'M',
+  HIGH: 'A',
 };
 
 const initialCreate = {
@@ -148,9 +148,9 @@ export function TasksPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <input type="datetime-local" value={createForm.dueDate} onChange={(e) => setCreateForm((f) => ({ ...f, dueDate: e.target.value }))} />
             <select value={createForm.priority} onChange={(e) => setCreateForm((f) => ({ ...f, priority: e.target.value as TaskPriority }))}>
-              <option value="HIGH">Prioridade Alta (Vermelho)</option>
-              <option value="MEDIUM">Prioridade Média (Amarelo)</option>
-              <option value="LOW">Prioridade Baixa (Verde)</option>
+              <option value="HIGH">Prioridade Alta</option>
+              <option value="MEDIUM">Prioridade Média</option>
+              <option value="LOW">Prioridade Baixa</option>
             </select>
           </div>
           <button type="submit">Criar tarefa</button>

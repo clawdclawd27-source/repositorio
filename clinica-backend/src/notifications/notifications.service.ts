@@ -157,4 +157,9 @@ export class NotificationsService {
   logs() {
     return this.prisma.outboundMessage.findMany({ orderBy: { createdAt: 'desc' }, take: 300 });
   }
+
+  async clearLogs() {
+    const res = await this.prisma.outboundMessage.deleteMany({});
+    return { success: true, deleted: res.count };
+  }
 }

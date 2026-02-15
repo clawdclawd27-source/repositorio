@@ -18,6 +18,8 @@ type TaskItem = {
   dueDate?: string;
 };
 
+const LOG_HISTORY_KEY = 'notifications_logs_history_v1';
+
 function normalizePhone(phone: string) {
   return phone.replace(/\D/g, '');
 }
@@ -41,9 +43,17 @@ function friendlyNotificationError(raw?: string) {
   return raw;
 }
 
+function priorityLetter(p: 'LOW' | 'MEDIUM' | 'HIGH') {
+  if (p === 'HIGH') return { letter: 'A', color: '#dc2626' };
+  if (p === 'MEDIUM') return { letter: 'M', color: '#ca8a04' };
+  return { letter: 'B', color: '#16a34a' };
+}
+
 export function NotificationsPage() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [taskAlerts, setTaskAlerts] = useState<TaskItem[]>([]);
+  const [logHistory, setLogHistory] = useState<LogItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [msg, setMsg] = useState('');
   const [form, setForm] = useState({ phone: '', message: 'Olá! Aqui é a Clínica Emanuelle Ferreira 💜 Mensagem de teste.' });
 
@@ -67,6 +77,12 @@ export function NotificationsPage() {
   }
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LOG_HISTORY_KEY);
+      setLogHistory(raw ? JSON.parse(raw) : []);
+    } catch {
+      setLogHistory([]);
+    }
     void load();
   }, []);
 
@@ -96,6 +112,22 @@ export function NotificationsPage() {
     }
   }
 
+  async function clearLogs() {
+    if (!window.confirm('Deseja limpar os logs e alertas do painel agora?')) return;
+    try {
+      const nextHistory = [...logs, ...logHistory].slice(0, 1000);
+      setLogHistory(nextHistory);
+      localStorage.setItem(LOG_HISTORY_KEY, JSON.stringify(nextHistory));
+
+      await api.delete('/notifications/logs');
+      setLogs([]);
+      setTaskAlerts([]);
+      setMsg('Logs e alertas do painel limpos.');
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao limpar logs');
+    }
+  }
+
   return (
     <div className="card" style={{ display: 'grid', gap: 12 }}>
       <h2 style={{ margin: 0 }}>Notificações</h2>
@@ -109,10 +141,12 @@ export function NotificationsPage() {
         <button type="submit">Enviar teste</button>
       </form>
 
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button type="button" onClick={() => void runNow('appointments')}>Rodar lembretes de consultas agora</button>
         <button type="button" onClick={() => void runNow('birthdays')}>Rodar aniversários agora</button>
         <button type="button" onClick={() => void load(true)}>Atualizar logs</button>
+        <button type="button" onClick={() => setShowHistory((v) => !v)}>{showHistory ? 'Ocultar histórico' : 'Ver histórico dos logs'}</button>
+        <button type="button" onClick={() => void clearLogs()} style={{ background: '#be123c' }}>Limpar logs</button>
       </div>
 
       {msg ? <small>{msg}</small> : null}
@@ -120,15 +154,33 @@ export function NotificationsPage() {
       <div style={{ display: 'grid', gap: 8 }}>
         <strong>Alertas de tarefas (painel administrativo)</strong>
         {taskAlerts.length === 0 ? <div>Nenhuma tarefa pendente.</div> : null}
-        {taskAlerts.map((t) => (
-          <div key={t.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
-            <div><strong>{t.title}</strong></div>
-            <div>Prioridade: {t.priority === 'HIGH' ? 'Alta' : t.priority === 'MEDIUM' ? 'Média' : 'Baixa'}</div>
-            <div>Status: {t.status === 'OPEN' ? 'Aberta' : t.status === 'IN_PROGRESS' ? 'Em andamento' : t.status}</div>
-            <div>Prazo: {t.dueDate ? new Date(t.dueDate).toLocaleString('pt-BR') : '-'}</div>
-          </div>
-        ))}
+        {taskAlerts.map((t) => {
+          const p = priorityLetter(t.priority);
+          return (
+            <div key={t.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
+              <div><strong>{t.title}</strong></div>
+              <div>Prioridade: <strong style={{ color: p.color }}>{p.letter}</strong></div>
+              <div>Status: {t.status === 'OPEN' ? 'Aberta' : t.status === 'IN_PROGRESS' ? 'Em andamento' : t.status}</div>
+              <div>Prazo: {t.dueDate ? new Date(t.dueDate).toLocaleString('pt-BR') : '-'}</div>
+            </div>
+          );
+        })}
       </div>
+
+      {showHistory ? (
+        <div style={{ display: 'grid', gap: 8 }}>
+          <strong>Histórico dos logs limpos</strong>
+          {logHistory.length === 0 ? <div>Sem histórico salvo.</div> : null}
+          {logHistory.slice(0, 100).map((l) => (
+            <div key={`h-${l.id}-${l.createdAt}`} style={{ border: '1px dashed #d8b4fe', borderRadius: 10, padding: 10 }}>
+              <div><strong>{l.kind}</strong> · {l.status}</div>
+              <div>Telefone: {l.phone}</div>
+              <div>Data: {new Date(l.createdAt).toLocaleString('pt-BR')}</div>
+              {l.error ? <div>Erro: {friendlyNotificationError(l.error)}</div> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       <div style={{ display: 'grid', gap: 8 }}>
         {logs.map((l) => (

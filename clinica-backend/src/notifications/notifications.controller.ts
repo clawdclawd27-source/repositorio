@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { Permission } from '../common/decorators/permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
@@ -36,5 +36,11 @@ export class NotificationsController {
   @Permission('notifications', 'view')
   logs() {
     return this.notificationsService.logs();
+  }
+
+  @Delete('logs')
+  @Permission('notifications', 'edit')
+  clearLogs() {
+    return this.notificationsService.clearLogs();
   }
 }
