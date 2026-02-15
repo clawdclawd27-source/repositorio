@@ -135,7 +135,6 @@ export class SettingsService {
 
     const current = await this.prisma.user.findUnique({ where: { id } });
     if (!current || !current.isActive) throw new BadRequestException('Profissional não encontrado');
-    if (current.role === UserRole.OWNER) throw new BadRequestException('Não é permitido editar outro OWNER aqui');
 
     if (dto.email && dto.email !== current.email) {
       const existsEmail = await this.prisma.user.findUnique({ where: { email: dto.email } });

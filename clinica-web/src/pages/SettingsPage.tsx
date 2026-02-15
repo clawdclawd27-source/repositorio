@@ -345,12 +345,12 @@ export function SettingsPage() {
             <div key={pro.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, display: 'grid', gap: 6 }}>
               <div><strong>{pro.name}</strong> · {pro.role === 'ADMIN' ? 'Admin / Funcionário' : pro.role === 'OWNER' ? 'Owner' : 'Cliente'}</div>
               <div>{pro.email} {pro.phone ? `· ${pro.phone}` : ''}</div>
-              {pro.role !== 'OWNER' ? (
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button type="button" onClick={() => startEditProfessional(pro)}>Editar</button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" onClick={() => startEditProfessional(pro)}>Editar</button>
+                {pro.role !== 'OWNER' ? (
                   <button type="button" onClick={() => void deleteProfessional(pro)} style={{ background: '#be123c' }}>Excluir</button>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </div>
           ))}
         </div>
