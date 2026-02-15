@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
 type ClinicProfile = {
@@ -27,6 +28,11 @@ type PermissionItem = {
   canDelete: boolean;
 };
 
+type ClientProfile = {
+  fullName: string;
+  phone: string;
+};
+
 const defaultProfile: ClinicProfile = {
   clinicName: '', cnpj: '', address: '', whatsapp: '', email: '', logoUrl: '',
 };
@@ -35,15 +41,37 @@ const defaultAgenda: Agenda = {
   workStartHour: 8, workEndHour: 18, slotMinutes: 30, bufferMinutes: 10,
 };
 
+const defaultClient: ClientProfile = {
+  fullName: '', phone: '',
+};
+
 export function SettingsPage() {
+  const { user } = useAuth();
+  const isClient = user?.role === 'CLIENT';
+
   const [profile, setProfile] = useState<ClinicProfile>(defaultProfile);
   const [agenda, setAgenda] = useState<Agenda>(defaultAgenda);
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
+
+  const [clientProfile, setClientProfile] = useState<ClientProfile>(defaultClient);
+  const [newEmail, setNewEmail] = useState(user?.email || '');
+  const [newPassword, setNewPassword] = useState('');
+
   const [msg, setMsg] = useState('');
 
   async function load() {
     setMsg('');
     try {
+      if (isClient) {
+        const me = await api.get('/portal/me');
+        setClientProfile({
+          fullName: me.data?.fullName || '',
+          phone: me.data?.phone || '',
+        });
+        setNewEmail(user?.email || '');
+        return;
+      }
+
       const [p, a, perms] = await Promise.all([
         api.get('/settings/clinic-profile'),
         api.get('/settings/agenda'),
@@ -59,7 +87,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [isClient]);
 
   async function saveProfile(e: FormEvent) {
     e.preventDefault();
@@ -79,6 +107,72 @@ export function SettingsPage() {
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao salvar agenda');
     }
+  }
+
+  async function saveClientProfile(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.patch('/portal/me', clientProfile);
+      setMsg('Perfil do cliente atualizado.');
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao salvar perfil do cliente');
+    }
+  }
+
+  async function changeEmail(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.patch('/portal/account/email', { email: newEmail });
+      setMsg('E-mail alterado com sucesso. Faça novo login para atualizar a sessão.');
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao mudar e-mail');
+    }
+  }
+
+  async function changePassword(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.patch('/portal/account/password', { password: newPassword });
+      setNewPassword('');
+      setMsg('Senha alterada com sucesso.');
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao mudar senha');
+    }
+  }
+
+  if (isClient) {
+    return (
+      <div className="card" style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Configurações</h2>
+            <small style={{ color: '#7a2e65' }}>Perfil do cliente e segurança da conta</small>
+          </div>
+          <button onClick={() => void load()}>Atualizar</button>
+        </div>
+
+        {msg ? <small>{msg}</small> : null}
+
+        <form onSubmit={saveClientProfile} style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
+          <strong>Perfil do cliente</strong>
+          <input placeholder="Nome" value={clientProfile.fullName} onChange={(e) => setClientProfile((v) => ({ ...v, fullName: e.target.value }))} />
+          <input placeholder="Telefone / WhatsApp" value={clientProfile.phone} onChange={(e) => setClientProfile((v) => ({ ...v, phone: e.target.value }))} />
+          <button type="submit">Salvar perfil</button>
+        </form>
+
+        <form onSubmit={changeEmail} style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
+          <strong>Mudar e-mail</strong>
+          <input type="email" placeholder="Novo e-mail" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} required />
+          <button type="submit">Salvar novo e-mail</button>
+        </form>
+
+        <form onSubmit={changePassword} style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
+          <strong>Mudar senha</strong>
+          <input type="password" placeholder="Nova senha" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+          <button type="submit">Salvar nova senha</button>
+        </form>
+      </div>
+    );
   }
 
   return (

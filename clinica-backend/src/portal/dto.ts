@@ -1,6 +1,6 @@
 import { AppointmentStatus, ReferralStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class PortalListAppointmentsQueryDto {
   @IsOptional()
@@ -38,4 +38,28 @@ export class PortalListReferralsQueryDto {
   @Min(1)
   @Max(100)
   pageSize?: number = 20;
+}
+
+export class UpdatePortalProfileDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  fullName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  phone?: string;
+}
+
+export class UpdatePortalEmailDto {
+  @IsEmail()
+  email!: string;
+}
+
+export class UpdatePortalPasswordDto {
+  @IsString()
+  @MinLength(6)
+  @MaxLength(120)
+  password!: string;
 }
