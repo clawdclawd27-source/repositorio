@@ -39,6 +39,23 @@ const emptyItem = {
   name: '', sku: '', category: '', unit: 'un', currentQty: 0, minQty: 0, costPrice: 0, salePrice: 0, active: true,
 };
 
+function normalizeSkuPart(text: string) {
+  return (text || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 8);
+}
+
+function generateSku(name: string, category?: string) {
+  const cat = normalizeSkuPart(category || 'ITEM') || 'ITEM';
+  const nm = normalizeSkuPart(name || 'PROD') || 'PROD';
+  const suffix = Math.floor(1000 + Math.random() * 9000);
+  return `${cat}-${nm}-${suffix}`;
+}
+
 export function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<StockMovement[]>([]);
@@ -72,12 +89,17 @@ export function InventoryPage() {
     e.preventDefault();
     setMsg('');
     try {
+      const payload = {
+        ...form,
+        sku: form.sku?.trim() || generateSku(form.name, form.category),
+      };
+
       if (editingId) {
-        await api.patch(`/inventory/items/${editingId}`, form);
+        await api.patch(`/inventory/items/${editingId}`, payload);
         setMsg('Item atualizado.');
       } else {
-        await api.post('/inventory/items', form);
-        setMsg('Item criado.');
+        await api.post('/inventory/items', payload);
+        setMsg('Item criado com SKU automático.');
       }
       setForm(emptyItem);
       setEditingId(null);
@@ -143,7 +165,10 @@ export function InventoryPage() {
           </label>
           <label style={{ display: 'grid', gap: 4 }}>
             <small>SKU (código interno)</small>
-            <input placeholder="Ex.: BTX-100U" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 6 }}>
+              <input placeholder="Ex.: BTX-100U" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} />
+              <button type="button" onClick={() => setForm((f) => ({ ...f, sku: generateSku(f.name, f.category) }))}>Gerar</button>
+            </div>
           </label>
           <label style={{ display: 'grid', gap: 4 }}>
             <small>Categoria</small>
