@@ -21,6 +21,7 @@ const shortcuts: Shortcut[] = [
   { label: 'Indicações', subtitle: 'Indicações e conversão', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
   { label: 'Notificações', subtitle: 'Histórico de envios', cta: 'Abrir', path: '/notificacoes', icon: '🔔', enabled: true },
   { label: 'Configurações', subtitle: 'Preferências do sistema', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
+  { label: 'Portal Cliente', subtitle: 'Visão do cliente final', cta: 'Abrir', path: '/portal-cliente', icon: '🙍', enabled: true },
 ];
 
 export function DashboardPage() {

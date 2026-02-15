@@ -21,11 +21,17 @@ const statusLabel: Record<Referral['status'], string> = {
   LOST: 'Perdida',
 };
 
+const contactTimeLabel: Record<'MANHA_10' | 'TARDE_13' | 'NOITE_21', string> = {
+  MANHA_10: 'Manhã (a partir das 10h)',
+  TARDE_13: 'Tarde (a partir das 13h)',
+  NOITE_21: 'Noite (até 21h)',
+};
+
 export function ReferralsPage() {
   const [items, setItems] = useState<Referral[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [msg, setMsg] = useState('');
-  const [form, setForm] = useState({ referrerClientId: '', referredName: '', referredPhone: '', referredEmail: '', notes: '' });
+  const [form, setForm] = useState({ referredName: '', referredPhone: '', contactTime: '' as '' | 'MANHA_10' | 'TARDE_13' | 'NOITE_21' });
   const [referrerNameInput, setReferrerNameInput] = useState('');
   const [statusDraft, setStatusDraft] = useState<Record<string, Referral['status']>>({});
 
@@ -59,22 +65,20 @@ export function ReferralsPage() {
         ? clients.find((c) => c.fullName.toLowerCase() === typed.toLowerCase())
         : undefined;
 
-      const referrerClientId = form.referrerClientId || matched?.id;
-      if (!referrerClientId) {
-        setMsg('Informe o nome do indicador (cliente já cadastrado) ou selecione na lista.');
+      if (!matched?.id) {
+        setMsg('Informe o nome do indicador exatamente como está no cadastro de clientes.');
         return;
       }
 
       await api.post('/referrals', {
-        ...form,
-        referrerClientId,
+        referrerClientId: matched.id,
+        referredName: form.referredName,
         referredPhone: form.referredPhone || undefined,
-        referredEmail: form.referredEmail || undefined,
-        notes: form.notes || undefined,
+        notes: form.contactTime ? `Horário disponível para contato: ${contactTimeLabel[form.contactTime]}` : undefined,
       });
       setMsg('Indicação criada.');
       setReferrerNameInput('');
-      setForm({ referrerClientId: '', referredName: '', referredPhone: '', referredEmail: '', notes: '' });
+      setForm({ referredName: '', referredPhone: '', contactTime: '' });
       await load();
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao criar indicação');
@@ -102,17 +106,16 @@ export function ReferralsPage() {
           placeholder="Nome de quem indicou"
           value={referrerNameInput}
           onChange={(e) => setReferrerNameInput(e.target.value)}
+          required
         />
-        <select value={form.referrerClientId} onChange={(e) => setForm((f) => ({ ...f, referrerClientId: e.target.value }))}>
-          <option value="">Ou selecione o cliente indicador</option>
-          {clients.map((c) => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-        </select>
         <input placeholder="Nome do indicado" value={form.referredName} onChange={(e) => setForm((f) => ({ ...f, referredName: e.target.value }))} required />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <input placeholder="Telefone" value={form.referredPhone} onChange={(e) => setForm((f) => ({ ...f, referredPhone: e.target.value }))} />
-          <input placeholder="E-mail" type="email" value={form.referredEmail} onChange={(e) => setForm((f) => ({ ...f, referredEmail: e.target.value }))} />
-        </div>
-        <input placeholder="Observações" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
+        <input placeholder="Telefone" value={form.referredPhone} onChange={(e) => setForm((f) => ({ ...f, referredPhone: e.target.value }))} />
+        <select value={form.contactTime} onChange={(e) => setForm((f) => ({ ...f, contactTime: e.target.value as 'MANHA_10' | 'TARDE_13' | 'NOITE_21' }))} required>
+          <option value="">Selecione horário para contato</option>
+          <option value="MANHA_10">Manhã (a partir das 10h)</option>
+          <option value="TARDE_13">Tarde (a partir das 13h)</option>
+          <option value="NOITE_21">Noite (até 21h)</option>
+        </select>
         <button type="submit">Criar indicação</button>
       </form>
 
@@ -122,7 +125,8 @@ export function ReferralsPage() {
         {items.map((r) => (
           <div key={r.id} style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10, display: 'grid', gap: 6 }}>
             <div><strong>{r.referredName}</strong> · Indicador: {r.referrerClient?.fullName || '-'}</div>
-            <div>Contato: {r.referredPhone || '-'} | {r.referredEmail || '-'}</div>
+            <div>Contato: {r.referredPhone || '-'}</div>
+            <div>Horário disponível: {r.notes?.replace('Horário disponível para contato: ', '') || '-'}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
               <select value={statusDraft[r.id] || r.status} onChange={(e) => setStatusDraft((prev) => ({ ...prev, [r.id]: e.target.value as Referral['status'] }))}>
                 {Object.keys(statusLabel).map((s) => <option key={s} value={s}>{statusLabel[s as Referral['status']]}</option>)}

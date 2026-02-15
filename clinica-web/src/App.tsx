@@ -14,6 +14,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ReferralsPage } from './pages/ReferralsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { PortalClientPage } from './pages/PortalClientPage';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/indicacoes" element={<ReferralsPage />} />
         <Route path="/notificacoes" element={<NotificationsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
+        <Route path="/portal-cliente" element={<PortalClientPage />} />
         <Route path="*" element={<Navigate to="/painel" replace />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
