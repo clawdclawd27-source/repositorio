@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
 type LogItem = {
@@ -10,10 +10,31 @@ type LogItem = {
   createdAt: string;
 };
 
+function normalizePhone(phone: string) {
+  return phone.replace(/\D/g, '');
+}
+
+function friendlyNotificationError(raw?: string) {
+  if (!raw) return '';
+  const lower = raw.toLowerCase();
+
+  if (raw.includes('#131030') || lower.includes('not in allowed list')) {
+    return 'Número não autorizado na lista de teste da Meta. Adicione o destinatário em Configuração da API > campo “Até”.';
+  }
+
+  if (lower.includes('whatsapp_token/whatsapp_phone_number_id não configurados')) {
+    return 'Configuração antiga sem token/phone id. Atualize os logs para ver os envios mais recentes.';
+  }
+
+  return raw;
+}
+
 export function NotificationsPage() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [msg, setMsg] = useState('');
   const [form, setForm] = useState({ phone: '', message: 'Olá! Aqui é a Clínica Emanuelle Ferreira 💜 Mensagem de teste.' });
+
+  const phonePreview = useMemo(() => normalizePhone(form.phone), [form.phone]);
 
   async function load() {
     try {
@@ -32,11 +53,14 @@ export function NotificationsPage() {
     e.preventDefault();
     setMsg('');
     try {
-      await api.post('/notifications/test-whatsapp', form);
+      await api.post('/notifications/test-whatsapp', {
+        ...form,
+        phone: normalizePhone(form.phone),
+      });
       setMsg('Mensagem teste enviada.');
       await load();
     } catch (err: any) {
-      setMsg(err?.response?.data?.message || 'Erro ao enviar teste');
+      setMsg(friendlyNotificationError(err?.response?.data?.message || 'Erro ao enviar teste'));
     }
   }
 
@@ -57,7 +81,9 @@ export function NotificationsPage() {
 
       <form onSubmit={sendTest} style={{ display: 'grid', gap: 8 }}>
         <strong>Teste de WhatsApp</strong>
-        <input placeholder="Telefone" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} required />
+        <input placeholder="Telefone (ex.: 5541999999999)" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} required />
+        <small>Formato recomendado: DDI + DDD + número (somente dígitos). Exemplo: 5541999999999.</small>
+        {phonePreview ? <small>Prévia enviada: {phonePreview}</small> : null}
         <input placeholder="Mensagem" value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} required />
         <button type="submit">Enviar teste</button>
       </form>
@@ -76,7 +102,7 @@ export function NotificationsPage() {
             <div><strong>{l.kind}</strong> · {l.status}</div>
             <div>Telefone: {l.phone}</div>
             <div>Data: {new Date(l.createdAt).toLocaleString('pt-BR')}</div>
-            {l.error ? <div>Erro: {l.error}</div> : null}
+            {l.error ? <div>Erro: {friendlyNotificationError(l.error)}</div> : null}
           </div>
         ))}
       </div>
