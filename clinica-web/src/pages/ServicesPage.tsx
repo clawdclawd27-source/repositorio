@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { api } from '../services/api';
 
 type Service = {
@@ -19,6 +20,9 @@ function money(v: string | number) {
 }
 
 export function ServicesPage() {
+  const { user } = useAuth();
+  const isClient = user?.role === 'CLIENT';
+
   const [items, setItems] = useState<Service[]>([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -27,15 +31,16 @@ export function ServicesPage() {
   async function load() {
     const { data } = await api.get<ListResponse | Service[]>('/services', { params: { page: 1, pageSize: 100 } });
     const rows = Array.isArray(data) ? data : data.items || [];
-    setItems(rows);
+    setItems(isClient ? rows.filter((s) => s.active) : rows);
   }
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [isClient]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    if (isClient) return;
     setMsg('');
     try {
       if (editingId) {
@@ -54,6 +59,7 @@ export function ServicesPage() {
   }
 
   function startEdit(s: Service) {
+    if (isClient) return;
     setEditingId(s.id);
     setForm({
       name: s.name,
@@ -67,45 +73,49 @@ export function ServicesPage() {
   return (
     <div className="card" style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>Serviços</h2>
+        <h2 style={{ margin: 0 }}>{isClient ? 'Serviços disponíveis' : 'Serviços'}</h2>
         <button type="button" onClick={() => void load()}>Atualizar lista</button>
       </div>
 
-      <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
-        <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
-        <input placeholder="Descrição" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <input
-            type="number"
-            min={1}
-            placeholder="Duração (min)"
-            value={form.durationMinutes}
-            onChange={(e) => setForm((f) => ({ ...f, durationMinutes: Number(e.target.value) }))}
-            required
-          />
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            placeholder="Preço base"
-            value={form.basePrice}
-            onChange={(e) => setForm((f) => ({ ...f, basePrice: Number(e.target.value) }))}
-            required
-          />
-        </div>
-        <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input type="checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} />
-          Ativo
-        </label>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="submit">{editingId ? 'Salvar edição' : 'Criar serviço'}</button>
-          {editingId ? (
-            <button type="button" onClick={() => { setEditingId(null); setForm(initialForm); }}>
-              Cancelar
-            </button>
-          ) : null}
-        </div>
-      </form>
+      {!isClient ? (
+        <form onSubmit={submit} style={{ display: 'grid', gap: 8 }}>
+          <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+          <input placeholder="Descrição" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <input
+              type="number"
+              min={1}
+              placeholder="Duração (min)"
+              value={form.durationMinutes}
+              onChange={(e) => setForm((f) => ({ ...f, durationMinutes: Number(e.target.value) }))}
+              required
+            />
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="Preço base"
+              value={form.basePrice}
+              onChange={(e) => setForm((f) => ({ ...f, basePrice: Number(e.target.value) }))}
+              required
+            />
+          </div>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input type="checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} />
+            Ativo
+          </label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="submit">{editingId ? 'Salvar edição' : 'Criar serviço'}</button>
+            {editingId ? (
+              <button type="button" onClick={() => { setEditingId(null); setForm(initialForm); }}>
+                Cancelar
+              </button>
+            ) : null}
+          </div>
+        </form>
+      ) : (
+        <small>Você visualiza somente serviços ativos.</small>
+      )}
 
       {msg ? <small>{msg}</small> : null}
 
@@ -125,7 +135,9 @@ export function ServicesPage() {
 
             <div style={{ color: '#7b6c89', fontSize: 13 }}>Valor base técnico: {money(s.basePrice)}</div>
 
-            <button type="button" onClick={() => startEdit(s)} style={{ marginTop: 6, justifySelf: 'start' }}>Editar</button>
+            {!isClient ? (
+              <button type="button" onClick={() => startEdit(s)} style={{ marginTop: 6, justifySelf: 'start' }}>Editar</button>
+            ) : null}
           </div>
         ))}
       </div>
