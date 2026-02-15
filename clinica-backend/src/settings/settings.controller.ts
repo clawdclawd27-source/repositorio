@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Put, Req, UseGuards } from '@nestjs/common';
 import { Permission } from '../common/decorators/permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
+import { UpdateAdminPasswordDto, UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
@@ -48,5 +48,11 @@ export class SettingsController {
   @Permission('settings', 'edit')
   updateNotifications(@Body() dto: UpdateNotificationSettingsDto) {
     return this.settingsService.updateNotificationSettings(dto);
+  }
+
+  @Patch('account/password')
+  @Permission('settings', 'edit')
+  updateAdminPassword(@Req() req: any, @Body() dto: UpdateAdminPasswordDto) {
+    return this.settingsService.updateAdminPassword(req.user, dto);
   }
 }

@@ -56,6 +56,7 @@ export function SettingsPage() {
   const [clientProfile, setClientProfile] = useState<ClientProfile>(defaultClient);
   const [newEmail, setNewEmail] = useState(user?.email || '');
   const [newPassword, setNewPassword] = useState('');
+  const [adminNewPassword, setAdminNewPassword] = useState('');
 
   const [msg, setMsg] = useState('');
 
@@ -137,6 +138,17 @@ export function SettingsPage() {
       setMsg('Senha alterada com sucesso.');
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao mudar senha');
+    }
+  }
+
+  async function changeAdminPassword(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.patch('/settings/account/password', { password: adminNewPassword });
+      setAdminNewPassword('');
+      setMsg('Senha da conta administrativa alterada com sucesso.');
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao mudar senha do administrador');
     }
   }
 
@@ -223,6 +235,12 @@ export function SettingsPage() {
           </div>
         </div>
         <button type="submit">Salvar agenda</button>
+      </form>
+
+      <form onSubmit={changeAdminPassword} style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
+        <strong>Segurança da conta administrativa</strong>
+        <input type="password" placeholder="Nova senha do administrador" value={adminNewPassword} onChange={(e) => setAdminNewPassword(e.target.value)} required />
+        <button type="submit">Salvar nova senha</button>
       </form>
 
       <div style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>

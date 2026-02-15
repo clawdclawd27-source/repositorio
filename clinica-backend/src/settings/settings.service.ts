@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
+import { UpdateAdminPasswordDto, UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
 
 const KEY = 'notifications.config';
 const CLINIC_PROFILE_KEY = 'clinic.profile';
@@ -83,5 +84,15 @@ export class SettingsService {
       update: { value: next as any },
     });
     return next;
+  }
+
+  async updateAdminPassword(user: { sub?: string }, dto: UpdateAdminPasswordDto) {
+    if (!user?.sub) throw new ForbiddenException('Usuário inválido');
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+    await this.prisma.user.update({
+      where: { id: user.sub },
+      data: { passwordHash },
+    });
+    return { success: true };
   }
 }

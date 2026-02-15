@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
 
 export class UpdateClinicProfileDto {
   @IsOptional()
@@ -80,4 +80,10 @@ export class UpdateNotificationSettingsDto {
   @IsOptional()
   @IsString()
   birthdayTemplate?: string;
+}
+
+export class UpdateAdminPasswordDto {
+  @IsString()
+  @MinLength(6)
+  password!: string;
 }
