@@ -124,4 +124,19 @@ export class PortalService {
       totalPages: Math.ceil(total / pageSize),
     };
   }
+
+  async services() {
+    return this.prisma.service.findMany({
+      where: { active: true },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        basePrice: true,
+        durationMinutes: true,
+        active: true,
+      },
+    });
+  }
 }

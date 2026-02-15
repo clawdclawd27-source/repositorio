@@ -43,6 +43,11 @@ export class PortalController {
     return this.portalService.myAppointments(req.user, query);
   }
 
+  @Get('services')
+  services() {
+    return this.portalService.services();
+  }
+
   @Get('referrals')
   myReferrals(@Req() req: any, @Query() query: PortalListReferralsQueryDto) {
     return this.portalService.myReferrals(req.user, query);

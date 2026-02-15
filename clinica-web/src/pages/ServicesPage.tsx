@@ -62,9 +62,15 @@ export function ServicesPage() {
   const [msg, setMsg] = useState('');
 
   async function load() {
+    if (isClient) {
+      const { data } = await api.get<Service[]>('/portal/services');
+      setItems((data || []).filter((s) => s.active));
+      return;
+    }
+
     const { data } = await api.get<ListResponse | Service[]>('/services', { params: { page: 1, pageSize: 100 } });
     const rows = Array.isArray(data) ? data : data.items || [];
-    setItems(isClient ? rows.filter((s) => s.active) : rows);
+    setItems(rows);
   }
 
   useEffect(() => {

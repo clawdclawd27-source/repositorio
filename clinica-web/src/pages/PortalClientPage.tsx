@@ -55,12 +55,12 @@ export function PortalClientPage() {
         api.get('/portal/me'),
         api.get('/portal/appointments', { params: { page: 1, pageSize: 20 } }),
         api.get('/portal/referrals', { params: { page: 1, pageSize: 20 } }),
-        api.get('/services', { params: { active: true, page: 1, pageSize: 100 } }).catch(() => ({ data: { items: [] } })), 
+        api.get('/portal/services').catch(() => ({ data: [] })), 
       ]);
       setMe(m.data || null);
       setAppointments(a.data?.items || []);
       setReferrals(r.data?.items || []);
-      setServices((Array.isArray(s.data) ? s.data : s.data?.items || []).filter((x: Service) => x.active !== false));
+      setServices((Array.isArray(s.data) ? s.data : []).filter((x: Service) => x.active !== false));
       setMsg('Portal atualizado.');
     } catch (err: any) {
       const code = err?.response?.status;
