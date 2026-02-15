@@ -16,6 +16,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ReferralsPage } from './pages/ReferralsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PortalClientPage } from './pages/PortalClientPage';
+import { ClientNotificationsPage } from './pages/ClientNotificationsPage';
 import { OperationalHelpPage } from './pages/OperationalHelpPage';
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/notificacoes" element={<NotificationsPage />} />
         <Route path="/configuracoes" element={<SettingsPage />} />
         <Route path="/portal-cliente" element={<PortalClientPage />} />
+        <Route path="/portal-notificacoes" element={<RoleRoute allow={['CLIENT']}><ClientNotificationsPage /></RoleRoute>} />
         <Route path="/ajuda-operacional" element={<RoleRoute allow={['ADMIN', 'OWNER']}><OperationalHelpPage /></RoleRoute>} />
 
         <Route path="/clientes" element={<RoleRoute allow={['ADMIN', 'OWNER']}><ClientsPage /></RoleRoute>} />
