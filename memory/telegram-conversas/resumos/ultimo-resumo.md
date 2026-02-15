@@ -1,23 +1,26 @@
 # Resumo diário — conversas Telegram
 
-Data/hora da coleta: 2026-02-15 12:00 (America/Sao_Paulo)
+Data/hora da coleta: 2026-02-15 18:00 (America/Sao_Paulo)
 Sessão analisada: `agent:main:main` (origem Telegram `telegram:8004185123`)
+Janela nova analisada: após o resumo das 12:00
 
 ## Principais decisões
-- Foi confirmado que o endpoint correto para teste de WhatsApp no backend é `POST /api/notifications/test-whatsapp`.
-- O erro 500 foi diagnosticado: causa raiz é ausência de variáveis no ambiente (`WHATSAPP_TOKEN` e `WHATSAPP_PHONE_NUMBER_ID`).
-- Direção definida: primeiro ajustar variáveis no Railway e, em paralelo, avançar na Meta para gerar token permanente + obter Phone Number ID.
+- Foi feito fallback para **deploy manual no Cloudflare Pages** quando o Browser Relay ficou instável (`tab not found`), e o deploy foi concluído com sucesso.
+- Validou-se que as mudanças entraram em produção (incluindo: **Marcar consulta no WhatsApp**, **Notificações do Cliente** e histórico de logs).
+- Após teste no celular (print), foi identificado que o cliente não via serviços/valores corretamente no portal.
+- Foi implementada correção técnica:
+  - backend: novo endpoint do portal para serviços ativos (`/portal/services`),
+  - frontend: portal cliente e página de serviços usando esse endpoint para perfil CLIENT.
 
 ## Tarefas abertas
-- No Railway (serviço backend), configurar/validar:
-  - `WHATSAPP_TOKEN`
-  - `WHATSAPP_PHONE_NUMBER_ID`
-  - `WHATSAPP_API_VERSION` (`v22.0`, recomendado)
-- Fazer redeploy do backend após salvar variáveis.
-- Na Meta, concluir geração do token permanente (System User token com permissões de WhatsApp) e copiar o Phone Number ID.
-- Reexecutar teste de notificação e validar envio nos logs (`/api/notifications/logs`).
+- Fazer deploy do backend no Railway com o commit `358c647`.
+- Publicar o novo `dist.zip` do frontend no Cloudflare Pages.
+- Validar no Android e iOS, após deploys:
+  - listagem de serviços com valores no portal cliente,
+  - botão de WhatsApp abrindo com mensagem preenchida,
+  - fluxo de notificações e logs sem regressão.
 
 ## Preferências do usuário observadas
-- Prefere execução guiada “mão na massa” em painéis externos (Meta/Railway), com o agente navegando quando possível.
-- Mantém comunicação objetiva e de baixa fricção (confirmações curtas como “Pronto” e continuidade imediata).
-- Valoriza diagnóstico técnico com causa raiz explícita e próximos passos diretos para destravar rápido.
+- Aceita fluxo de **fallback prático** (manual) quando automação via Relay falha, desde que com instrução curta e objetiva.
+- Costuma confirmar progresso com mensagens curtas (“pronto”, “ok”, “feito”) e espera continuidade imediata.
+- Faz validação real em dispositivo móvel e usa print para acelerar diagnóstico.
