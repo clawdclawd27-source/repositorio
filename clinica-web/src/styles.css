@@ -382,8 +382,39 @@ small { color: #be123c; }
   .portal-grid,
   .reports-grid,
   .reports-kpis,
-  .task-fields {
-    grid-template-columns: 1fr;
+  .task-fields,
+  .tasks-toolbar,
+  .task-top,
+  .birthdays-toolbar,
+  .reports-head,
+  .reports-filters,
+  .portal-head,
+  .birthdays-head,
+  .tasks-head,
+  .reports-row,
+  .client-actions {
+    grid-template-columns: 1fr !important;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .birthday-card,
+  .portal-clinic-banner,
+  .topbar-brand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card div[style*='grid-template-columns'],
+  .card form div[style*='grid-template-columns'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card button,
+  .card input,
+  .card select,
+  .card textarea {
+    width: 100%;
   }
 
   .login-card {
