@@ -347,9 +347,7 @@ export function SettingsPage() {
               <div>{pro.email} {pro.phone ? `· ${pro.phone}` : ''}</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button type="button" onClick={() => startEditProfessional(pro)}>Editar</button>
-                {pro.role !== 'OWNER' ? (
-                  <button type="button" onClick={() => void deleteProfessional(pro)} style={{ background: '#be123c' }}>Excluir</button>
-                ) : null}
+                <button type="button" onClick={() => void deleteProfessional(pro)} style={{ background: '#be123c' }}>Excluir</button>
               </div>
             </div>
           ))}

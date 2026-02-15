@@ -164,8 +164,12 @@ export class SettingsService {
 
     const current = await this.prisma.user.findUnique({ where: { id } });
     if (!current || !current.isActive) throw new BadRequestException('Profissional não encontrado');
-    if (current.role === UserRole.OWNER) throw new BadRequestException('Não é permitido excluir OWNER');
     if (actor?.sub && actor.sub === id) throw new BadRequestException('Não é permitido excluir sua própria conta');
+
+    if (current.role === UserRole.OWNER) {
+      const ownersActive = await this.prisma.user.count({ where: { role: UserRole.OWNER, isActive: true } });
+      if (ownersActive <= 1) throw new BadRequestException('Não é permitido excluir o último OWNER ativo');
+    }
 
     await this.prisma.user.update({ where: { id }, data: { isActive: false } });
     return { success: true };
