@@ -22,6 +22,10 @@ function friendlyNotificationError(raw?: string) {
     return 'Número não autorizado na lista de teste da Meta. Adicione o destinatário em Configuração da API > campo “Até”.';
   }
 
+  if (raw.includes('(#10)') || lower.includes('does not have permission for this action')) {
+    return 'Token sem permissão para envio. Gere um novo token na Meta com acesso ao WhatsApp (whatsapp_business_messaging).';
+  }
+
   if (lower.includes('whatsapp_token/whatsapp_phone_number_id não configurados')) {
     return 'Configuração antiga sem token/phone id. Atualize os logs para ver os envios mais recentes.';
   }
