@@ -41,7 +41,7 @@ export function DashboardPage() {
   return (
     <div className="dashboard-wrap">
       <section className="dashboard-header">
-        <div className="dashboard-logo">✿</div>
+        <img src="/assets/logo-clinica.jpg" alt="Logo da clínica" className="dashboard-logo-img" />
         <div>
           <h1>{isClient ? 'Área do Cliente' : 'Clínica Emanuelle Ferreira'}</h1>
           <p>{isClient ? 'Painel limpo e focado no cliente' : 'Painel administrativo'}</p>

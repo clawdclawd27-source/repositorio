@@ -24,6 +24,7 @@ export function LoginPage() {
   return (
     <div className="login-wrap">
       <form className="card login-card" onSubmit={onSubmit}>
+        <img src="/assets/logo-clinica.jpg" alt="Logo Clínica Emanuelle Ferreira" className="brand-logo" />
         <h1>Clínica Emanuelle Ferreira</h1>
         <p className="subtitle">Acesso ao sistema</p>
         <label>
