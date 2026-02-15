@@ -8,7 +8,8 @@
   "scripts": {
     "start": "node dist/src/main.js",
     "start:dev": "nest start --watch",
-    "start:stable": "npm run build && npm run start",
+    "serve:stable": "node dist/src/main.js",
+    "start:stable": "npm run build && npm run serve:stable",
     "build": "nest build",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
