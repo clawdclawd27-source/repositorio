@@ -29,7 +29,6 @@ const clientShortcuts: Shortcut[] = [
   { label: 'Portal Cliente', subtitle: 'Minha visão pessoal', cta: 'Abrir', path: '/portal-cliente', icon: '🙍', enabled: true },
   { label: 'Serviços', subtitle: 'Catálogo da clínica', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
   { label: 'Indicações', subtitle: 'Minhas indicações', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
-  { label: 'Notificações', subtitle: 'Mensagens e histórico', cta: 'Abrir', path: '/notificacoes', icon: '🔔', enabled: true },
   { label: 'Configurações', subtitle: 'Ajustes da conta', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
 ];
 
