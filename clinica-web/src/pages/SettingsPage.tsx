@@ -33,6 +33,15 @@ type ClientProfile = {
   phone: string;
 };
 
+type ProfessionalItem = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'ADMIN' | 'OWNER' | 'CLIENT';
+  createdAt?: string;
+};
+
 const defaultProfile: ClinicProfile = {
   clinicName: '', cnpj: '', address: '', whatsapp: '', email: '', logoUrl: '',
 };
@@ -52,11 +61,13 @@ export function SettingsPage() {
   const [profile, setProfile] = useState<ClinicProfile>(defaultProfile);
   const [agenda, setAgenda] = useState<Agenda>(defaultAgenda);
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
+  const [professionals, setProfessionals] = useState<ProfessionalItem[]>([]);
 
   const [clientProfile, setClientProfile] = useState<ClientProfile>(defaultClient);
   const [newEmail, setNewEmail] = useState(user?.email || '');
   const [newPassword, setNewPassword] = useState('');
   const [adminNewPassword, setAdminNewPassword] = useState('');
+  const [newProfessional, setNewProfessional] = useState({ name: '', email: '', phone: '', password: '' });
 
   const [msg, setMsg] = useState('');
 
@@ -73,14 +84,16 @@ export function SettingsPage() {
         return;
       }
 
-      const [p, a, perms] = await Promise.all([
+      const [p, a, perms, pros] = await Promise.all([
         api.get('/settings/clinic-profile'),
         api.get('/settings/agenda'),
         api.get('/permissions').catch(() => ({ data: [] })),
+        api.get('/settings/professionals').catch(() => ({ data: [] })),
       ]);
       setProfile({ ...defaultProfile, ...(p.data || {}) });
       setAgenda({ ...defaultAgenda, ...(a.data || {}) });
       setPermissions(Array.isArray(perms.data) ? perms.data : []);
+      setProfessionals(Array.isArray(pros.data) ? pros.data : []);
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao carregar configurações');
     }
@@ -149,6 +162,18 @@ export function SettingsPage() {
       setMsg('Senha da conta administrativa alterada com sucesso.');
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao mudar senha do administrador');
+    }
+  }
+
+  async function createProfessional(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.post('/settings/professionals', newProfessional);
+      setNewProfessional({ name: '', email: '', phone: '', password: '' });
+      setMsg('Profissional cadastrado com sucesso.');
+      await load();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao cadastrar profissional');
     }
   }
 
@@ -242,6 +267,31 @@ export function SettingsPage() {
         <input type="password" placeholder="Nova senha do administrador" value={adminNewPassword} onChange={(e) => setAdminNewPassword(e.target.value)} required />
         <button type="submit">Salvar nova senha</button>
       </form>
+
+      <div style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
+        <strong>Profissionais (Funcionários)</strong>
+        <small style={{ color: '#7a2e65' }}>Cadastro de equipe para acesso ao painel administrativo.</small>
+
+        <form onSubmit={createProfessional} style={{ display: 'grid', gap: 8 }}>
+          <input placeholder="Nome do profissional" value={newProfessional.name} onChange={(e) => setNewProfessional((v) => ({ ...v, name: e.target.value }))} required />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <input type="email" placeholder="E-mail" value={newProfessional.email} onChange={(e) => setNewProfessional((v) => ({ ...v, email: e.target.value }))} required />
+            <input placeholder="Telefone" value={newProfessional.phone} onChange={(e) => setNewProfessional((v) => ({ ...v, phone: e.target.value }))} />
+          </div>
+          <input type="password" placeholder="Senha inicial" value={newProfessional.password} onChange={(e) => setNewProfessional((v) => ({ ...v, password: e.target.value }))} required />
+          <button type="submit">Adicionar profissional</button>
+        </form>
+
+        <div style={{ display: 'grid', gap: 6 }}>
+          {professionals.length === 0 ? <div>Nenhum profissional cadastrado.</div> : null}
+          {professionals.map((pro) => (
+            <div key={pro.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8 }}>
+              <strong>{pro.name}</strong> · {pro.role}
+              <div>{pro.email} {pro.phone ? `· ${pro.phone}` : ''}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div style={{ display: 'grid', gap: 8, border: '1px solid #f0abfc', borderRadius: 12, padding: 12 }}>
         <strong>Usuários e permissões</strong>

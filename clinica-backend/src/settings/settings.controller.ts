@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Patch, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { Permission } from '../common/decorators/permission.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PermissionGuard } from '../common/guards/permission.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { UpdateAdminPasswordDto, UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
+import { CreateProfessionalDto, UpdateAdminPasswordDto, UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
 import { SettingsService } from './settings.service';
 
 @Controller('settings')
@@ -54,5 +54,17 @@ export class SettingsController {
   @Permission('settings', 'edit')
   updateAdminPassword(@Req() req: any, @Body() dto: UpdateAdminPasswordDto) {
     return this.settingsService.updateAdminPassword(req.user, dto);
+  }
+
+  @Get('professionals')
+  @Permission('settings', 'view')
+  listProfessionals() {
+    return this.settingsService.listProfessionals();
+  }
+
+  @Post('professionals')
+  @Permission('settings', 'edit')
+  createProfessional(@Body() dto: CreateProfessionalDto, @Req() req: any) {
+    return this.settingsService.createProfessional(dto, req.user);
   }
 }

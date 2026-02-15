@@ -1,4 +1,5 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { UserRole } from '@prisma/client';
 
 export class UpdateClinicProfileDto {
   @IsOptional()
@@ -86,4 +87,24 @@ export class UpdateAdminPasswordDto {
   @IsString()
   @MinLength(6)
   password!: string;
+}
+
+export class CreateProfessionalDto {
+  @IsString()
+  name!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsString()
+  @MinLength(6)
+  password!: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
 }
