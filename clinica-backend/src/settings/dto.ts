@@ -108,3 +108,22 @@ export class CreateProfessionalDto {
   @IsEnum(UserRole)
   role?: UserRole;
 }
+
+export class UpdateProfessionalDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
+}

@@ -68,6 +68,7 @@ export function SettingsPage() {
   const [newPassword, setNewPassword] = useState('');
   const [adminNewPassword, setAdminNewPassword] = useState('');
   const [newProfessional, setNewProfessional] = useState({ name: '', email: '', phone: '', password: '' });
+  const [editingProfessionalId, setEditingProfessionalId] = useState<string | null>(null);
 
   const [msg, setMsg] = useState('');
 
@@ -165,15 +166,53 @@ export function SettingsPage() {
     }
   }
 
-  async function createProfessional(e: FormEvent) {
+  async function saveProfessional(e: FormEvent) {
     e.preventDefault();
     try {
-      await api.post('/settings/professionals', newProfessional);
+      if (editingProfessionalId) {
+        const payload: any = {
+          name: newProfessional.name,
+          email: newProfessional.email,
+          phone: newProfessional.phone,
+        };
+        if (newProfessional.password?.trim()) payload.password = newProfessional.password;
+        await api.patch(`/settings/professionals/${editingProfessionalId}`, payload);
+        setMsg('Profissional atualizado com sucesso.');
+      } else {
+        await api.post('/settings/professionals', newProfessional);
+        setMsg('Profissional cadastrado com sucesso.');
+      }
+
       setNewProfessional({ name: '', email: '', phone: '', password: '' });
-      setMsg('Profissional cadastrado com sucesso.');
+      setEditingProfessionalId(null);
       await load();
     } catch (err: any) {
-      setMsg(err?.response?.data?.message || 'Erro ao cadastrar profissional');
+      setMsg(err?.response?.data?.message || 'Erro ao salvar profissional');
+    }
+  }
+
+  function startEditProfessional(pro: ProfessionalItem) {
+    setEditingProfessionalId(pro.id);
+    setNewProfessional({
+      name: pro.name || '',
+      email: pro.email || '',
+      phone: pro.phone || '',
+      password: '',
+    });
+  }
+
+  async function deleteProfessional(pro: ProfessionalItem) {
+    if (!window.confirm(`Deseja excluir ${pro.name}?`)) return;
+    try {
+      await api.delete(`/settings/professionals/${pro.id}`);
+      if (editingProfessionalId === pro.id) {
+        setEditingProfessionalId(null);
+        setNewProfessional({ name: '', email: '', phone: '', password: '' });
+      }
+      setMsg('Profissional excluído com sucesso.');
+      await load();
+    } catch (err: any) {
+      setMsg(err?.response?.data?.message || 'Erro ao excluir profissional');
     }
   }
 
@@ -272,22 +311,31 @@ export function SettingsPage() {
         <strong>Profissionais (Funcionários)</strong>
         <small style={{ color: '#7a2e65' }}>Cadastro de equipe para acesso ao painel administrativo.</small>
 
-        <form onSubmit={createProfessional} style={{ display: 'grid', gap: 8 }}>
+        <form onSubmit={saveProfessional} style={{ display: 'grid', gap: 8 }}>
           <input placeholder="Nome do profissional" value={newProfessional.name} onChange={(e) => setNewProfessional((v) => ({ ...v, name: e.target.value }))} required />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <input type="email" placeholder="E-mail" value={newProfessional.email} onChange={(e) => setNewProfessional((v) => ({ ...v, email: e.target.value }))} required />
             <input placeholder="Telefone" value={newProfessional.phone} onChange={(e) => setNewProfessional((v) => ({ ...v, phone: e.target.value }))} />
           </div>
-          <input type="password" placeholder="Senha inicial" value={newProfessional.password} onChange={(e) => setNewProfessional((v) => ({ ...v, password: e.target.value }))} required />
-          <button type="submit">Adicionar profissional</button>
+          <input type="password" placeholder={editingProfessionalId ? 'Nova senha (opcional)' : 'Senha inicial'} value={newProfessional.password} onChange={(e) => setNewProfessional((v) => ({ ...v, password: e.target.value }))} required={!editingProfessionalId} />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="submit">{editingProfessionalId ? 'Salvar edição' : 'Adicionar profissional'}</button>
+            {editingProfessionalId ? <button type="button" onClick={() => { setEditingProfessionalId(null); setNewProfessional({ name: '', email: '', phone: '', password: '' }); }}>Cancelar</button> : null}
+          </div>
         </form>
 
         <div style={{ display: 'grid', gap: 6 }}>
           {professionals.length === 0 ? <div>Nenhum profissional cadastrado.</div> : null}
           {professionals.map((pro) => (
-            <div key={pro.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8 }}>
-              <strong>{pro.name}</strong> · {pro.role}
+            <div key={pro.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, display: 'grid', gap: 6 }}>
+              <div><strong>{pro.name}</strong> · {pro.role}</div>
               <div>{pro.email} {pro.phone ? `· ${pro.phone}` : ''}</div>
+              {pro.role !== 'OWNER' ? (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={() => startEditProfessional(pro)}>Editar</button>
+                  <button type="button" onClick={() => void deleteProfessional(pro)} style={{ background: '#be123c' }}>Excluir</button>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

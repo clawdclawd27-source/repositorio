@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateProfessionalDto, UpdateAdminPasswordDto, UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto } from './dto';
+import { CreateProfessionalDto, UpdateAdminPasswordDto, UpdateAgendaSettingsDto, UpdateClinicProfileDto, UpdateNotificationSettingsDto, UpdateProfessionalDto } from './dto';
 
 const KEY = 'notifications.config';
 const CLINIC_PROFILE_KEY = 'clinic.profile';
@@ -126,5 +126,48 @@ export class SettingsService {
       },
       select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
     });
+  }
+
+  async updateProfessional(id: string, dto: UpdateProfessionalDto, actor: { role?: string }) {
+    if (actor?.role !== UserRole.OWNER) {
+      throw new ForbiddenException('Somente OWNER pode editar profissional.');
+    }
+
+    const current = await this.prisma.user.findUnique({ where: { id } });
+    if (!current || !current.isActive) throw new BadRequestException('Profissional não encontrado');
+    if (current.role === UserRole.OWNER) throw new BadRequestException('Não é permitido editar outro OWNER aqui');
+
+    if (dto.email && dto.email !== current.email) {
+      const existsEmail = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (existsEmail) throw new BadRequestException('E-mail já cadastrado');
+    }
+
+    const data: any = {
+      ...(dto.name !== undefined ? { name: dto.name } : {}),
+      ...(dto.email !== undefined ? { email: dto.email } : {}),
+      ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
+    };
+
+    if (dto.password) data.passwordHash = await bcrypt.hash(dto.password, 10);
+
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
+    });
+  }
+
+  async deleteProfessional(id: string, actor: { role?: string; sub?: string }) {
+    if (actor?.role !== UserRole.OWNER) {
+      throw new ForbiddenException('Somente OWNER pode excluir profissional.');
+    }
+
+    const current = await this.prisma.user.findUnique({ where: { id } });
+    if (!current || !current.isActive) throw new BadRequestException('Profissional não encontrado');
+    if (current.role === UserRole.OWNER) throw new BadRequestException('Não é permitido excluir OWNER');
+    if (actor?.sub && actor.sub === id) throw new BadRequestException('Não é permitido excluir sua própria conta');
+
+    await this.prisma.user.update({ where: { id }, data: { isActive: false } });
+    return { success: true };
   }
 }
