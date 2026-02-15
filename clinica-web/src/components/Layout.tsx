@@ -17,6 +17,9 @@ export function Layout() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="button" onClick={() => navigate('/painel')}>Início</button>
+          {user?.role === 'CLIENT' ? (
+            <button type="button" onClick={() => navigate('/configuracoes')}>Configurações</button>
+          ) : null}
           <button type="button" onClick={logout}>Sair</button>
         </div>
       </header>

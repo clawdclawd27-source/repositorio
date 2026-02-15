@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 
 type Me = { id: string; fullName: string; email?: string; phone?: string };
@@ -25,6 +26,7 @@ function formatReferralStatus(status: string) {
 }
 
 export function PortalClientPage() {
+  const navigate = useNavigate();
   const [me, setMe] = useState<Me | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -81,9 +83,14 @@ export function PortalClientPage() {
           <div>Rua Marte, 2294 · Sítio Cercado · Curitiba</div>
           <div>WhatsApp: (41) 99875-6850</div>
         </div>
-        <a className="portal-whats-btn" href="https://wa.me/5541998756850" target="_blank" rel="noreferrer">
-          Agendar pelo WhatsApp
-        </a>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="portal-whats-btn" onClick={() => navigate('/configuracoes')}>
+            Alterar senha
+          </button>
+          <a className="portal-whats-btn" href="https://wa.me/5541998756850" target="_blank" rel="noreferrer">
+            Agendar pelo WhatsApp
+          </a>
+        </div>
       </div>
 
       {me ? (
