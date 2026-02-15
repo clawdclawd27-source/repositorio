@@ -14,6 +14,7 @@ type Appointment = {
   id: string;
   startsAt: string;
   status: 'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED';
+  notes?: string;
   service?: { name?: string };
 };
 
@@ -38,7 +39,7 @@ export function ClientsPage() {
   const [historyAppointments, setHistoryAppointments] = useState<Appointment[]>([]);
   const [historyPackages, setHistoryPackages] = useState<ClientPackage[]>([]);
 
-  const [apptDraft, setApptDraft] = useState<Record<string, { startsAt: string; status: Appointment['status'] }>>({});
+  const [apptDraft, setApptDraft] = useState<Record<string, { startsAt: string; status: Appointment['status']; notes: string }>>({});
   const [pkgDraft, setPkgDraft] = useState<Record<string, { remainingSessions: number; status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED' }>>({});
 
   async function load() {
@@ -119,11 +120,11 @@ export function ClientsPage() {
       setHistoryAppointments(aRows);
       setHistoryPackages(pRows);
 
-      const aDraft: Record<string, { startsAt: string; status: Appointment['status'] }> = {};
+      const aDraft: Record<string, { startsAt: string; status: Appointment['status']; notes: string }> = {};
       aRows.forEach((a) => {
         const d = new Date(a.startsAt);
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        aDraft[a.id] = { startsAt: d.toISOString().slice(0, 16), status: a.status };
+        aDraft[a.id] = { startsAt: d.toISOString().slice(0, 16), status: a.status, notes: a.notes || '' };
       });
       setApptDraft(aDraft);
 
@@ -145,9 +146,9 @@ export function ClientsPage() {
     if (!d) return;
 
     try {
-      await api.patch(`/appointments/${a.id}/reschedule`, { startsAt: new Date(d.startsAt).toISOString(), useServiceDuration: true });
-      await api.patch(`/appointments/${a.id}/status`, { status: d.status });
-      setMsg('Consulta atualizada.');
+      await api.patch(`/appointments/${a.id}/reschedule`, { startsAt: new Date(d.startsAt).toISOString(), useServiceDuration: true, notes: d.notes });
+      await api.patch(`/appointments/${a.id}/status`, { status: d.status, notes: d.notes });
+      setMsg('Histórico de consulta atualizado e salvo.');
       if (openHistoryId) await openHistory(openHistoryId);
     } catch (err: any) {
       setMsg(err?.response?.data?.message || 'Erro ao editar consulta');
@@ -232,13 +233,13 @@ export function ClientsPage() {
 
             <div className="client-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button type="button" onClick={() => startEdit(c)}>Editar informações</button>
-              <button type="button" onClick={() => void openHistory(c.id)}>Histórico e pacotes</button>
+              <button type="button" onClick={() => void openHistory(c.id)}>Histórico de consultas</button>
               <button type="button" onClick={() => void removeClient(c.id)} style={{ background: '#be123c' }}>Apagar cliente</button>
             </div>
 
             {openHistoryId === c.id ? (
               <div className="client-history" style={{ borderTop: '1px dashed #e9d5ff', paddingTop: 8, display: 'grid', gap: 8 }}>
-                <strong>Histórico do cliente</strong>
+                <strong>Histórico de consultas do paciente</strong>
 
                 <div>
                   <small>Consultas recentes</small>
@@ -246,22 +247,32 @@ export function ClientsPage() {
                   {historyAppointments.map((a) => (
                     <div key={a.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, marginTop: 6, display: 'grid', gap: 6 }}>
                       <div><strong>{a.service?.name || '-'}</strong> · {new Date(a.startsAt).toLocaleString('pt-BR')}</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 6 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                         <input
                           type="datetime-local"
                           value={apptDraft[a.id]?.startsAt || ''}
-                          onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { status: a.status }), startsAt: e.target.value } }))}
+                          onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { status: a.status, notes: a.notes || '' }), startsAt: e.target.value } }))}
                         />
                         <select
                           value={apptDraft[a.id]?.status || a.status}
-                          onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { startsAt: '' }), status: e.target.value as Appointment['status'] } }))}
+                          onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { startsAt: '', notes: a.notes || '' }), status: e.target.value as Appointment['status'] } }))}
                         >
                           <option value="SCHEDULED">Agendada</option>
                           <option value="CONFIRMED">Confirmada</option>
                           <option value="DONE">Concluída</option>
                           <option value="CANCELLED">Cancelada</option>
                         </select>
-                        <button type="button" onClick={() => void saveAppointment(a)}>Editar</button>
+                      </div>
+
+                      <textarea
+                        placeholder="Observações da consulta"
+                        value={apptDraft[a.id]?.notes || ''}
+                        onChange={(e) => setApptDraft((prev) => ({ ...prev, [a.id]: { ...(prev[a.id] || { startsAt: '', status: a.status }), notes: e.target.value } }))}
+                        rows={2}
+                      />
+
+                      <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                        <button type="button" onClick={() => void saveAppointment(a)}>Salvar</button>
                         <button type="button" onClick={() => void removeAppointment(a.id)} style={{ background: '#be123c' }}>Apagar</button>
                       </div>
                     </div>
