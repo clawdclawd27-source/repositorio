@@ -29,6 +29,20 @@ type ClientPackage = {
 
 type AccessRole = 'CLIENT' | 'OWNER' | 'FUNCIONARIO' | 'ADMIN';
 
+function dateOnlyToInput(value?: string) {
+  if (!value) return '';
+  const only = value.includes('T') ? value.slice(0, 10) : value;
+  return only;
+}
+
+function dateOnlyToPtBr(value?: string) {
+  if (!value) return '-';
+  const only = value.includes('T') ? value.slice(0, 10) : value;
+  const [y, m, d] = only.split('-');
+  if (!y || !m || !d) return '-';
+  return `${d}/${m}/${y}`;
+}
+
 const initialForm = {
   fullName: '',
   phone: '',
@@ -111,7 +125,7 @@ export function ClientsPage() {
       phone: c.phone || '',
       email: c.email || '',
       cpf: c.cpf || '',
-      birthDate: c.birthDate ? new Date(c.birthDate).toISOString().slice(0, 10) : '',
+      birthDate: dateOnlyToInput(c.birthDate),
       accessRole: 'CLIENT',
       loginEmail: '',
       loginPassword: '',
@@ -285,7 +299,7 @@ export function ClientsPage() {
               <div>Telefone/WhatsApp: {c.phone || '-'}</div>
               <div>E-mail: {c.email || '-'}</div>
               <div>CPF: {c.cpf || '-'}</div>
-              <div>Data de nascimento: {c.birthDate ? new Date(c.birthDate).toLocaleDateString('pt-BR') : '-'}</div>
+              <div>Data de nascimento: {dateOnlyToPtBr(c.birthDate)}</div>
             </div>
 
             <div className="client-actions" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

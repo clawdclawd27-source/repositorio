@@ -5,6 +5,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { CreateClientDto, UpdateClientDto } from './dto';
 
+function parseBirthDate(dateOnly?: string) {
+  if (!dateOnly) return undefined;
+  const [y, m, d] = dateOnly.split('-').map(Number);
+  if (!y || !m || !d) return undefined;
+  return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+}
+
 @Injectable()
 export class ClientsService {
   constructor(
@@ -37,7 +44,7 @@ export class ClientsService {
         data: {
           fullName: dto.fullName,
           cpf: dto.cpf,
-          birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+          birthDate: parseBirthDate(dto.birthDate),
           email: dto.email,
           phone: dto.phone,
           emergencyContact: dto.emergencyContact,
@@ -87,7 +94,7 @@ export class ClientsService {
       data: {
         fullName: dto.fullName,
         cpf: dto.cpf,
-        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        birthDate: parseBirthDate(dto.birthDate),
         email: dto.email,
         phone: dto.phone,
         emergencyContact: dto.emergencyContact,
