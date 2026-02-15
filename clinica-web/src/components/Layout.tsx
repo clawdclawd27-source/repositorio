@@ -15,7 +15,7 @@ export function Layout() {
             <div className="topbar-sub">Biomedicina Estética Avançada · {user?.name} ({user?.role})</div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div className="topbar-actions">
           <button type="button" onClick={() => navigate('/painel')}>Início</button>
           {user?.role === 'CLIENT' ? (
             <button type="button" onClick={() => navigate('/configuracoes')}>Configurações</button>
