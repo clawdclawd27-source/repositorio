@@ -69,6 +69,7 @@ export function NotificationsPage() {
       const tasks = (t.data || []) as TaskItem[];
       setTaskAlerts(tasks.filter((x) => x.status !== 'DONE' && x.status !== 'CANCELLED'));
       if (showSuccess) {
+        setShowHistory(false);
         setMsg('Logs atualizados com sucesso.');
       }
     } catch (err: any) {
@@ -145,7 +146,9 @@ export function NotificationsPage() {
         <button type="button" onClick={() => void runNow('appointments')}>Rodar lembretes de consultas agora</button>
         <button type="button" onClick={() => void runNow('birthdays')}>Rodar aniversários agora</button>
         <button type="button" onClick={() => void load(true)}>Atualizar logs</button>
-        <button type="button" onClick={() => setShowHistory((v) => !v)}>{showHistory ? 'Ocultar histórico' : 'Ver histórico dos logs'}</button>
+        {logHistory.length > 0 ? (
+          <button type="button" onClick={() => setShowHistory((v) => !v)}>{showHistory ? 'Ocultar histórico' : 'Ver histórico dos logs'}</button>
+        ) : null}
         <button type="button" onClick={() => void clearLogs()} style={{ background: '#be123c' }}>Limpar logs</button>
       </div>
 
