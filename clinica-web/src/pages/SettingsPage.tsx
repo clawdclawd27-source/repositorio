@@ -42,6 +42,8 @@ type ProfessionalItem = {
   createdAt?: string;
 };
 
+type RoleOption = 'CLIENT' | 'OWNER' | 'ADMIN';
+
 const defaultProfile: ClinicProfile = {
   clinicName: '', cnpj: '', address: '', whatsapp: '', email: '', logoUrl: '',
 };
@@ -67,7 +69,7 @@ export function SettingsPage() {
   const [newEmail, setNewEmail] = useState(user?.email || '');
   const [newPassword, setNewPassword] = useState('');
   const [adminNewPassword, setAdminNewPassword] = useState('');
-  const [newProfessional, setNewProfessional] = useState({ name: '', email: '', phone: '', password: '' });
+  const [newProfessional, setNewProfessional] = useState({ name: '', email: '', phone: '', password: '', role: 'ADMIN' as RoleOption });
   const [editingProfessionalId, setEditingProfessionalId] = useState<string | null>(null);
 
   const [msg, setMsg] = useState('');
@@ -174,6 +176,7 @@ export function SettingsPage() {
           name: newProfessional.name,
           email: newProfessional.email,
           phone: newProfessional.phone,
+          role: newProfessional.role,
         };
         if (newProfessional.password?.trim()) payload.password = newProfessional.password;
         await api.patch(`/settings/professionals/${editingProfessionalId}`, payload);
@@ -183,7 +186,7 @@ export function SettingsPage() {
         setMsg('Profissional cadastrado com sucesso.');
       }
 
-      setNewProfessional({ name: '', email: '', phone: '', password: '' });
+      setNewProfessional({ name: '', email: '', phone: '', password: '', role: 'ADMIN' });
       setEditingProfessionalId(null);
       await load();
     } catch (err: any) {
@@ -198,6 +201,7 @@ export function SettingsPage() {
       email: pro.email || '',
       phone: pro.phone || '',
       password: '',
+      role: (pro.role || 'ADMIN') as RoleOption,
     });
   }
 
@@ -207,7 +211,7 @@ export function SettingsPage() {
       await api.delete(`/settings/professionals/${pro.id}`);
       if (editingProfessionalId === pro.id) {
         setEditingProfessionalId(null);
-        setNewProfessional({ name: '', email: '', phone: '', password: '' });
+        setNewProfessional({ name: '', email: '', phone: '', password: '', role: 'ADMIN' });
       }
       setMsg('Profissional excluído com sucesso.');
       await load();
@@ -317,10 +321,17 @@ export function SettingsPage() {
             <input type="email" placeholder="E-mail" value={newProfessional.email} onChange={(e) => setNewProfessional((v) => ({ ...v, email: e.target.value }))} required />
             <input placeholder="Telefone" value={newProfessional.phone} onChange={(e) => setNewProfessional((v) => ({ ...v, phone: e.target.value }))} />
           </div>
-          <input type="password" placeholder={editingProfessionalId ? 'Nova senha (opcional)' : 'Senha inicial'} value={newProfessional.password} onChange={(e) => setNewProfessional((v) => ({ ...v, password: e.target.value }))} required={!editingProfessionalId} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <input type="password" placeholder={editingProfessionalId ? 'Nova senha (opcional)' : 'Senha inicial'} value={newProfessional.password} onChange={(e) => setNewProfessional((v) => ({ ...v, password: e.target.value }))} required={!editingProfessionalId} />
+            <select value={newProfessional.role} onChange={(e) => setNewProfessional((v) => ({ ...v, role: e.target.value as RoleOption }))}>
+              <option value="CLIENT">Cliente</option>
+              <option value="OWNER">Owner</option>
+              <option value="ADMIN">Funcionário</option>
+            </select>
+          </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="submit">{editingProfessionalId ? 'Salvar edição' : 'Adicionar profissional'}</button>
-            {editingProfessionalId ? <button type="button" onClick={() => { setEditingProfessionalId(null); setNewProfessional({ name: '', email: '', phone: '', password: '' }); }}>Cancelar</button> : null}
+            {editingProfessionalId ? <button type="button" onClick={() => { setEditingProfessionalId(null); setNewProfessional({ name: '', email: '', phone: '', password: '', role: 'ADMIN' }); }}>Cancelar</button> : null}
           </div>
         </form>
 
@@ -328,7 +339,7 @@ export function SettingsPage() {
           {professionals.length === 0 ? <div>Nenhum profissional cadastrado.</div> : null}
           {professionals.map((pro) => (
             <div key={pro.id} style={{ border: '1px solid #f3d4fa', borderRadius: 8, padding: 8, display: 'grid', gap: 6 }}>
-              <div><strong>{pro.name}</strong> · {pro.role}</div>
+              <div><strong>{pro.name}</strong> · {pro.role === 'ADMIN' ? 'Funcionário' : pro.role === 'OWNER' ? 'Owner' : 'Cliente'}</div>
               <div>{pro.email} {pro.phone ? `· ${pro.phone}` : ''}</div>
               {pro.role !== 'OWNER' ? (
                 <div style={{ display: 'flex', gap: 8 }}>

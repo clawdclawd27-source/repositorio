@@ -113,7 +113,7 @@ export class SettingsService {
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) throw new BadRequestException('E-mail já cadastrado');
 
-    const role = dto.role === UserRole.OWNER ? UserRole.ADMIN : (dto.role || UserRole.ADMIN);
+    const role = dto.role || UserRole.ADMIN;
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     return this.prisma.user.create({
@@ -146,6 +146,7 @@ export class SettingsService {
       ...(dto.name !== undefined ? { name: dto.name } : {}),
       ...(dto.email !== undefined ? { email: dto.email } : {}),
       ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
+      ...(dto.role !== undefined ? { role: dto.role } : {}),
     };
 
     if (dto.password) data.passwordHash = await bcrypt.hash(dto.password, 10);
