@@ -1,15 +1,44 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 
 type Me = { id: string; fullName: string; email?: string; phone?: string };
 type Appointment = { id: string; startsAt: string; endsAt: string; status: string; service?: { name?: string } };
 type Referral = { id: string; referredName: string; status: string; createdAt: string };
 
+function formatAppointmentStatus(status: string) {
+  const key = (status || '').toUpperCase();
+  if (key === 'SCHEDULED') return 'Agendada';
+  if (key === 'CONFIRMED') return 'Confirmada';
+  if (key === 'COMPLETED') return 'Concluída';
+  if (key === 'CANCELLED') return 'Cancelada';
+  if (key === 'NO_SHOW') return 'Não compareceu';
+  return status || '-';
+}
+
+function formatReferralStatus(status: string) {
+  const key = (status || '').toUpperCase();
+  if (key === 'NEW') return 'Nova';
+  if (key === 'CONTACTED') return 'Contatada';
+  if (key === 'CONVERTED') return 'Convertida';
+  if (key === 'LOST') return 'Não convertida';
+  return status || '-';
+}
+
 export function PortalClientPage() {
   const [me, setMe] = useState<Me | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [msg, setMsg] = useState('');
+
+  const orderedAppointments = useMemo(
+    () => [...appointments].sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()),
+    [appointments],
+  );
+
+  const nextAppointment = useMemo(() => {
+    const now = Date.now();
+    return orderedAppointments.find((a) => new Date(a.startsAt).getTime() >= now) || null;
+  }, [orderedAppointments]);
 
   async function load() {
     setMsg('');
@@ -22,6 +51,7 @@ export function PortalClientPage() {
       setMe(m.data || null);
       setAppointments(a.data?.items || []);
       setReferrals(r.data?.items || []);
+      setMsg('Portal atualizado.');
     } catch (err: any) {
       const code = err?.response?.status;
       if (code === 403) setMsg('Acesso do portal disponível apenas com usuário CLIENT.');
@@ -43,7 +73,7 @@ export function PortalClientPage() {
         <button onClick={() => void load()}>Atualizar</button>
       </div>
 
-      {msg ? <small>{msg}</small> : null}
+      {msg ? <div style={{ fontSize: 13, color: '#6b5a7a' }}>{msg}</div> : null}
 
       <div className="portal-clinic-banner">
         <div>
@@ -64,15 +94,28 @@ export function PortalClientPage() {
         </div>
       ) : null}
 
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+        <div className="portal-item"><strong>Consultas</strong><div>{orderedAppointments.length}</div></div>
+        <div className="portal-item"><strong>Indicações</strong><div>{referrals.length}</div></div>
+        <div className="portal-item">
+          <strong>Próxima consulta</strong>
+          <div>
+            {nextAppointment
+              ? new Date(nextAppointment.startsAt).toLocaleString('pt-BR')
+              : 'Nenhuma futura'}
+          </div>
+        </div>
+      </div>
+
       <div className="portal-grid">
         <section className="portal-panel">
           <strong>Minhas consultas</strong>
-          {appointments.length === 0 ? <div>Nenhuma consulta encontrada.</div> : null}
-          {appointments.map((a) => (
+          {orderedAppointments.length === 0 ? <div>Nenhuma consulta encontrada.</div> : null}
+          {orderedAppointments.map((a) => (
             <div key={a.id} className="portal-item">
-              <div><strong>{a.service?.name || '-'}</strong></div>
+              <div><strong>{a.service?.name || 'Atendimento'}</strong></div>
               <div>{new Date(a.startsAt).toLocaleString('pt-BR')} - {new Date(a.endsAt).toLocaleTimeString('pt-BR')}</div>
-              <div>Status: {a.status}</div>
+              <div>Status: {formatAppointmentStatus(a.status)}</div>
             </div>
           ))}
         </section>
@@ -83,7 +126,7 @@ export function PortalClientPage() {
           {referrals.map((r) => (
             <div key={r.id} className="portal-item">
               <div><strong>{r.referredName}</strong></div>
-              <div>Status: {r.status}</div>
+              <div>Status: {formatReferralStatus(r.status)}</div>
               <div>Criada em: {new Date(r.createdAt).toLocaleString('pt-BR')}</div>
             </div>
           ))}
