@@ -13,7 +13,7 @@ type LogItem = {
 export function NotificationsPage() {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [msg, setMsg] = useState('');
-  const [form, setForm] = useState({ phone: '', message: 'Mensagem teste da clínica ✅' });
+  const [form, setForm] = useState({ phone: '', message: 'Olá! Aqui é a Clínica Emanuelle Ferreira 💜 Mensagem de teste.' });
 
   async function load() {
     try {

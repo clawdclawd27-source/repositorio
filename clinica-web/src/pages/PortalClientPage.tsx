@@ -38,7 +38,7 @@ export function PortalClientPage() {
       <div className="portal-head">
         <div>
           <h2>Portal do Cliente</h2>
-          <p>Seu histórico de consultas e indicações em um só lugar.</p>
+          <p>Clínica Emanuelle Ferreira · seus atendimentos, indicações e acompanhamento.</p>
         </div>
         <button onClick={() => void load()}>Atualizar</button>
       </div>

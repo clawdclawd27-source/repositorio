@@ -8,11 +8,15 @@ export function Layout() {
   return (
     <div className="app-shell single">
       <header className="topbar">
-        <div>
-          <strong>{user?.name}</strong> <span style={{ opacity: 0.8 }}>({user?.role})</span>
+        <div className="topbar-brand">
+          <img src="/assets/logo-clinica.jpg" alt="Logo Clínica Emanuelle Ferreira" className="topbar-logo" />
+          <div>
+            <strong>Clínica Emanuelle Ferreira</strong>
+            <div className="topbar-sub">Biomedicina Estética Avançada · {user?.name} ({user?.role})</div>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" onClick={() => navigate('/painel')}>Painel</button>
+          <button type="button" onClick={() => navigate('/painel')}>Início</button>
           <button type="button" onClick={logout}>Sair</button>
         </div>
       </header>

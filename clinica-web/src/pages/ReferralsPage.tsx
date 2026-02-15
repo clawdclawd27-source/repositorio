@@ -98,7 +98,7 @@ export function ReferralsPage() {
 
   return (
     <div className="card" style={{ display: 'grid', gap: 12 }}>
-      <h2 style={{ margin: 0 }}>Indicações</h2>
+      <h2 style={{ margin: 0 }}>Indicações da Clínica</h2>
 
       <form onSubmit={create} style={{ display: 'grid', gap: 8 }}>
         <strong>Nova indicação</strong>
