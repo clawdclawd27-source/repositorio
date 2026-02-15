@@ -34,44 +34,49 @@ export function PortalClientPage() {
   }, []);
 
   return (
-    <div className="card" style={{ display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>Portal do Cliente</h2>
+    <div className="portal-page card">
+      <div className="portal-head">
+        <div>
+          <h2>Portal do Cliente</h2>
+          <p>Seu histórico de consultas e indicações em um só lugar.</p>
+        </div>
         <button onClick={() => void load()}>Atualizar</button>
       </div>
 
       {msg ? <small>{msg}</small> : null}
 
       {me ? (
-        <div style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10 }}>
+        <div className="portal-me">
           <strong>{me.fullName}</strong>
           <div>E-mail: {me.email || '-'}</div>
           <div>Telefone: {me.phone || '-'}</div>
         </div>
       ) : null}
 
-      <div style={{ display: 'grid', gap: 8 }}>
-        <strong>Minhas consultas</strong>
-        {appointments.length === 0 ? <div>Nenhuma consulta encontrada.</div> : null}
-        {appointments.map((a) => (
-          <div key={a.id} style={{ border: '1px solid #f3d4fa', borderRadius: 10, padding: 10 }}>
-            <div><strong>{a.service?.name || '-'}</strong></div>
-            <div>{new Date(a.startsAt).toLocaleString('pt-BR')} - {new Date(a.endsAt).toLocaleTimeString('pt-BR')}</div>
-            <div>Status: {a.status}</div>
-          </div>
-        ))}
-      </div>
+      <div className="portal-grid">
+        <section className="portal-panel">
+          <strong>Minhas consultas</strong>
+          {appointments.length === 0 ? <div>Nenhuma consulta encontrada.</div> : null}
+          {appointments.map((a) => (
+            <div key={a.id} className="portal-item">
+              <div><strong>{a.service?.name || '-'}</strong></div>
+              <div>{new Date(a.startsAt).toLocaleString('pt-BR')} - {new Date(a.endsAt).toLocaleTimeString('pt-BR')}</div>
+              <div>Status: {a.status}</div>
+            </div>
+          ))}
+        </section>
 
-      <div style={{ display: 'grid', gap: 8 }}>
-        <strong>Minhas indicações</strong>
-        {referrals.length === 0 ? <div>Nenhuma indicação encontrada.</div> : null}
-        {referrals.map((r) => (
-          <div key={r.id} style={{ border: '1px solid #f3d4fa', borderRadius: 10, padding: 10 }}>
-            <div><strong>{r.referredName}</strong></div>
-            <div>Status: {r.status}</div>
-            <div>Criada em: {new Date(r.createdAt).toLocaleString('pt-BR')}</div>
-          </div>
-        ))}
+        <section className="portal-panel">
+          <strong>Minhas indicações</strong>
+          {referrals.length === 0 ? <div>Nenhuma indicação encontrada.</div> : null}
+          {referrals.map((r) => (
+            <div key={r.id} className="portal-item">
+              <div><strong>{r.referredName}</strong></div>
+              <div>Status: {r.status}</div>
+              <div>Criada em: {new Date(r.createdAt).toLocaleString('pt-BR')}</div>
+            </div>
+          ))}
+        </section>
       </div>
     </div>
   );

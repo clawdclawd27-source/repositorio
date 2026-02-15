@@ -237,3 +237,27 @@ small { color: #be123c; }
 .bar-fill { height: 100%; border-radius: 999px; }
 .bar-fill.purple { background: linear-gradient(90deg, #7c3aed, #a855f7); }
 .bar-fill.pink { background: linear-gradient(90deg, #db2777, #ec4899); }
+
+.portal-page { display: grid; gap: 12px; }
+.portal-head { display: flex; justify-content: space-between; align-items: center; }
+.portal-head h2 { margin: 0; }
+.portal-head p { margin: 4px 0 0; color: #7b6c89; }
+.portal-me {
+  border: 1px solid #f0abfc;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fcf7ff;
+}
+.portal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.portal-panel {
+  border: 1px solid #efd5ff;
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.portal-item {
+  border: 1px solid #f3d4fa;
+  border-radius: 10px;
+  padding: 10px;
+}
