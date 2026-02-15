@@ -13,10 +13,43 @@ type Service = {
 
 type ListResponse = { items: Service[]; total: number };
 
-const initialForm = { name: '', description: '', durationMinutes: 60, basePrice: 0, active: true };
+const initialForm = {
+  name: '',
+  description: '',
+  durationMinutes: 60,
+  basePrice: 0,
+  active: true,
+  installmentEnabled: false,
+  installmentMax: 5,
+  installmentValue: 0,
+};
 
 function money(v: string | number) {
   return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+const INSTALLMENT_TAG = '[PARCELAMENTO]';
+
+function parseInstallment(description?: string) {
+  if (!description) return { text: '', enabled: false, max: 5, value: 0 };
+  const re = /\[PARCELAMENTO\]\s*até\s*(\d+)x\s*de\s*R\$\s*([\d.,]+)/i;
+  const m = description.match(re);
+  const text = description.replace(re, '').replace(/\n{2,}/g, '\n').trim();
+  if (!m) return { text, enabled: false, max: 5, value: 0 };
+  const parsedValue = Number(m[2].replace(/\./g, '').replace(',', '.'));
+  return {
+    text,
+    enabled: true,
+    max: Number(m[1]) || 5,
+    value: Number.isFinite(parsedValue) ? parsedValue : 0,
+  };
+}
+
+function buildDescription(text: string, enabled: boolean, max: number, value: number) {
+  const cleanText = (text || '').replace(/\[PARCELAMENTO\][^\n]*/gi, '').trim();
+  if (!enabled) return cleanText;
+  const tag = `${INSTALLMENT_TAG} até ${max}x de ${money(value)}`;
+  return cleanText ? `${cleanText}\n${tag}` : tag;
 }
 
 export function ServicesPage() {
@@ -43,11 +76,19 @@ export function ServicesPage() {
     if (isClient) return;
     setMsg('');
     try {
+      const payload = {
+        name: form.name,
+        description: buildDescription(form.description, form.installmentEnabled, form.installmentMax, form.installmentValue),
+        durationMinutes: form.durationMinutes,
+        basePrice: form.basePrice,
+        active: form.active,
+      };
+
       if (editingId) {
-        await api.patch(`/services/${editingId}`, form);
+        await api.patch(`/services/${editingId}`, payload);
         setMsg('Serviço atualizado.');
       } else {
-        await api.post('/services', form);
+        await api.post('/services', payload);
         setMsg('Serviço criado.');
       }
       setForm(initialForm);
@@ -61,12 +102,16 @@ export function ServicesPage() {
   function startEdit(s: Service) {
     if (isClient) return;
     setEditingId(s.id);
+    const parsed = parseInstallment(s.description);
     setForm({
       name: s.name,
-      description: s.description || '',
+      description: parsed.text,
       durationMinutes: s.durationMinutes,
       basePrice: Number(s.basePrice),
       active: s.active,
+      installmentEnabled: parsed.enabled,
+      installmentMax: parsed.max,
+      installmentValue: parsed.value,
     });
   }
 
@@ -100,6 +145,40 @@ export function ServicesPage() {
               required
             />
           </div>
+
+          <div style={{ border: '1px solid #f0abfc', borderRadius: 10, padding: 10, display: 'grid', gap: 8 }}>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input
+                type="checkbox"
+                checked={form.installmentEnabled}
+                onChange={(e) => setForm((f) => ({ ...f, installmentEnabled: e.target.checked }))}
+              />
+              Habilitar parcelamento
+            </label>
+
+            {form.installmentEnabled ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <input
+                  type="number"
+                  min={1}
+                  max={24}
+                  placeholder="Máximo de parcelas"
+                  value={form.installmentMax}
+                  onChange={(e) => setForm((f) => ({ ...f, installmentMax: Number(e.target.value) }))}
+                  required
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="Valor da parcela"
+                  value={form.installmentValue}
+                  onChange={(e) => setForm((f) => ({ ...f, installmentValue: Number(e.target.value) }))}
+                  required
+                />
+              </div>
+            ) : null}
+          </div>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input type="checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} />
             Ativo
@@ -120,26 +199,35 @@ export function ServicesPage() {
       {msg ? <small>{msg}</small> : null}
 
       <div style={{ display: 'grid', gap: 10 }}>
-        {items.map((s) => (
-          <div key={s.id} style={{ border: '1px solid #f0abfc', borderRadius: 12, padding: 12, display: 'grid', gap: 6 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong>{s.name}</strong>
-              <span>{s.active ? '✅ Ativo' : '⛔ Inativo'}</span>
+        {items.map((s) => {
+          const installment = parseInstallment(s.description);
+          return (
+            <div key={s.id} style={{ border: '1px solid #f0abfc', borderRadius: 12, padding: 12, display: 'grid', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <strong>{s.name}</strong>
+                <span>{s.active ? '✅ Ativo' : '⛔ Inativo'}</span>
+              </div>
+
+              <div style={{ color: '#6b5a7a', fontSize: 13 }}>Duração: {s.durationMinutes} min</div>
+
+              <div style={{ fontWeight: 700, color: '#7c3aed' }}>
+                {installment.text || `Preço base: ${money(s.basePrice)}`}
+              </div>
+
+              {installment.enabled ? (
+                <div style={{ border: '1px dashed #d946ef', borderRadius: 8, padding: 8, fontSize: 13, color: '#6b21a8' }}>
+                  Parcelamento: até {installment.max}x de {money(installment.value)}
+                </div>
+              ) : null}
+
+              <div style={{ color: '#7b6c89', fontSize: 13 }}>Valor total: {money(s.basePrice)}</div>
+
+              {!isClient ? (
+                <button type="button" onClick={() => startEdit(s)} style={{ marginTop: 6, justifySelf: 'start' }}>Editar</button>
+              ) : null}
             </div>
-
-            <div style={{ color: '#6b5a7a', fontSize: 13 }}>Duração: {s.durationMinutes} min</div>
-
-            <div style={{ fontWeight: 700, color: '#7c3aed' }}>
-              {s.description?.trim() ? s.description : `Preço base: ${money(s.basePrice)}`}
-            </div>
-
-            <div style={{ color: '#7b6c89', fontSize: 13 }}>Valor base técnico: {money(s.basePrice)}</div>
-
-            {!isClient ? (
-              <button type="button" onClick={() => startEdit(s)} style={{ marginTop: 6, justifySelf: 'start' }}>Editar</button>
-            ) : null}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
