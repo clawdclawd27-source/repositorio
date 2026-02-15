@@ -37,3 +37,6 @@ npm run prisma:seed:inventory
 
 ## Observação
 No ambiente atual, priorizar `serve:stable` em execução contínua e usar `rebuild` só quando houver mudança de código. Isso reduz risco de queda durante uso com a usuária.
+
+## WhatsApp em produção
+- Guia de virada: `WHATSAPP-PRODUCAO.md`
