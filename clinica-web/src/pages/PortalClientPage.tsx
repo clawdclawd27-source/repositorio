@@ -5,6 +5,7 @@ import { api } from '../services/api';
 type Me = { id: string; fullName: string; email?: string; phone?: string };
 type Appointment = { id: string; startsAt: string; endsAt: string; status: string; service?: { name?: string } };
 type Referral = { id: string; referredName: string; status: string; createdAt: string };
+type Service = { id: string; name: string; description?: string; basePrice: string | number; active: boolean };
 
 function formatAppointmentStatus(status: string) {
   const key = (status || '').toUpperCase();
@@ -25,11 +26,16 @@ function formatReferralStatus(status: string) {
   return status || '-';
 }
 
+function money(v: string | number) {
+  return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 export function PortalClientPage() {
   const navigate = useNavigate();
   const [me, setMe] = useState<Me | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [msg, setMsg] = useState('');
 
   const orderedAppointments = useMemo(
@@ -45,14 +51,16 @@ export function PortalClientPage() {
   async function load() {
     setMsg('');
     try {
-      const [m, a, r] = await Promise.all([
+      const [m, a, r, s] = await Promise.all([
         api.get('/portal/me'),
         api.get('/portal/appointments', { params: { page: 1, pageSize: 20 } }),
         api.get('/portal/referrals', { params: { page: 1, pageSize: 20 } }),
+        api.get('/services', { params: { active: true, page: 1, pageSize: 100 } }).catch(() => ({ data: { items: [] } })), 
       ]);
       setMe(m.data || null);
       setAppointments(a.data?.items || []);
       setReferrals(r.data?.items || []);
+      setServices((Array.isArray(s.data) ? s.data : s.data?.items || []).filter((x: Service) => x.active !== false));
       setMsg('Portal atualizado.');
     } catch (err: any) {
       const code = err?.response?.status;
@@ -113,6 +121,24 @@ export function PortalClientPage() {
           </div>
         </div>
       </div>
+
+      <section className="portal-panel">
+        <strong>Serviços disponíveis</strong>
+        {services.length === 0 ? <div>Nenhum serviço disponível no momento.</div> : null}
+        {services.map((s) => {
+          const text = encodeURIComponent(`Olá! Sou ${me?.fullName || 'cliente'} e quero marcar consulta para ${s.name} (${money(s.basePrice)}).`);
+          return (
+            <div key={s.id} className="portal-item" style={{ display: 'grid', gap: 6 }}>
+              <div><strong>{s.name}</strong></div>
+              <div style={{ color: '#6b5a7a' }}>{s.description || '-'}</div>
+              <div style={{ fontWeight: 700, color: '#7c3aed' }}>{money(s.basePrice)}</div>
+              <a className="portal-whats-btn" href={`https://wa.me/5541998756850?text=${text}`} target="_blank" rel="noreferrer">
+                Marcar consulta no WhatsApp
+              </a>
+            </div>
+          );
+        })}
+      </section>
 
       <div className="portal-grid">
         <section className="portal-panel">
