@@ -10,3 +10,4 @@
 - Em produtos de gestão (web/admin), prefere interface mais profissional com navegação por botões e dados de negócio reais em vez de catálogos de teste.
 - No desenho de permissões, prefere separação rígida entre painel da clínica (ADMIN/OWNER) e painel do cliente, com experiência do cliente mais clean e acesso restrito.
 - Valoriza que o app reflita a identidade real da clínica (branding/textos/estilo), inclusive usando referências externas como Instagram para guiar o visual.
+- Em fluxos com bloqueio de acesso/permissão, prefere que eu avance até o limite e deixe para ele só a ação final necessária (ex.: clique/aceite), sem travar o progresso.

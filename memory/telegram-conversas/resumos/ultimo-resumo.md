@@ -1,26 +1,22 @@
 # Resumo diário — conversas Telegram
 
-Data/hora da coleta: 2026-02-15 18:00 (America/Sao_Paulo)
+Data/hora da coleta: 2026-02-16 18:00 (America/Sao_Paulo)
 Sessão analisada: `agent:main:main` (origem Telegram `telegram:8004185123`)
-Janela nova analisada: após o resumo das 12:00
+Janela nova analisada: após o resumo de 2026-02-15 18:00
 
 ## Principais decisões
-- Foi feito fallback para **deploy manual no Cloudflare Pages** quando o Browser Relay ficou instável (`tab not found`), e o deploy foi concluído com sucesso.
-- Validou-se que as mudanças entraram em produção (incluindo: **Marcar consulta no WhatsApp**, **Notificações do Cliente** e histórico de logs).
-- Após teste no celular (print), foi identificado que o cliente não via serviços/valores corretamente no portal.
-- Foi implementada correção técnica:
-  - backend: novo endpoint do portal para serviços ativos (`/portal/services`),
-  - frontend: portal cliente e página de serviços usando esse endpoint para perfil CLIENT.
+- Prioridade mudou para **criar um novo projeto (“projeto-aliens-ia”)** e depois voltar aos ajustes pendentes da clínica.
+- Foi iniciado um fluxo prático de deploy: build do frontend, publicação no Cloudflare e tentativas de estabilizar backend no Railway.
+- Foram aplicados commits de correção para produção:
+  - `de84bf01` (ajuste de caminho de dados da API no Railway),
+  - `a24fd928` e `82f7cb0c` (ajustes de `railway.json` para build/start com ou sem root directory).
 
 ## Tarefas abertas
-- Fazer deploy do backend no Railway com o commit `358c647`.
-- Publicar o novo `dist.zip` do frontend no Cloudflare Pages.
-- Validar no Android e iOS, após deploys:
-  - listagem de serviços com valores no portal cliente,
-  - botão de WhatsApp abrindo com mensagem preenchida,
-  - fluxo de notificações e logs sem regressão.
+- Confirmar no Railway que o serviço da API está usando a configuração correta após os commits mais recentes (`82f7cb0c`) e validar endpoint sem 404/502.
+- Finalizar validação ponta a ponta do novo projeto em produção (frontend + API).
+- Retomar as pendências da clínica após estabilizar o novo projeto, conforme combinado.
 
 ## Preferências do usuário observadas
-- Aceita fluxo de **fallback prático** (manual) quando automação via Relay falha, desde que com instrução curta e objetiva.
-- Costuma confirmar progresso com mensagens curtas (“pronto”, “ok”, “feito”) e espera continuidade imediata.
-- Faz validação real em dispositivo móvel e usa print para acelerar diagnóstico.
+- Mantém preferência por execução “faça pra mim” com mínima fricção e checkpoints curtos.
+- Quando há bloqueio de permissão/acesso em painel externo, prefere que eu faça o máximo possível e deixe para ele apenas o clique final.
+- Aceita tratar permissões administrativas depois (“quando for a hora certa”), sem interromper o avanço do trabalho atual.
