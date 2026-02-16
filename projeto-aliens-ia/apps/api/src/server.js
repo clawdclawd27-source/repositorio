@@ -55,7 +55,7 @@ function normalizePauta(item = {}) {
     prioridade: PRIORITY_OPT.includes(item.prioridade) ? item.prioridade : 'M',
     horaPublicacao: String(item.horaPublicacao || ''),
     createdAt: item.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    updatedAt: item.updatedAt || new Date().toISOString(),
   };
 }
 
@@ -109,23 +109,50 @@ function loadPautas() {
   return seeded;
 }
 
-let pautas = loadPautas();
+function filterPautas(list, query) {
+  const q = String(query.q || '').toLowerCase().trim();
+  const status = String(query.status || '').trim();
+  const prioridade = String(query.prioridade || '').trim();
 
-app.get('/health', (_req, res) => res.json({ ok: true }));
-
-app.get('/api/pautas', (req, res) => {
-  const q = String(req.query.q || '').toLowerCase().trim();
-  const status = String(req.query.status || '').trim();
-  const prioridade = String(req.query.prioridade || '').trim();
-
-  const filtered = pautas.filter((p) => {
+  return list.filter((p) => {
     const byQ = !q || `${p.titulo} ${p.descricao} ${p.tags.join(' ')}`.toLowerCase().includes(q);
     const byStatus = !status || p.status === status;
     const byPrioridade = !prioridade || p.prioridade === prioridade;
     return byQ && byStatus && byPrioridade;
   });
+}
 
-  res.json(filtered);
+let pautas = loadPautas();
+
+app.get('/health', (_req, res) => res.json({ ok: true }));
+
+app.get('/api/pautas', (req, res) => {
+  const page = Math.max(1, Number(req.query.page || 1));
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit || 12)));
+
+  const filtered = filterPautas(pautas, req.query);
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / limit));
+  const start = (page - 1) * limit;
+  const data = filtered.slice(start, start + limit);
+
+  res.json({
+    data,
+    meta: { page, limit, total, pages },
+  });
+});
+
+app.get('/api/pautas/analytics', (req, res) => {
+  const filtered = filterPautas(pautas, req.query);
+  const byStatus = STATUS_OPT.reduce((acc, key) => ({ ...acc, [key]: 0 }), {});
+  const byPrioridade = PRIORITY_OPT.reduce((acc, key) => ({ ...acc, [key]: 0 }), {});
+
+  for (const item of filtered) {
+    byStatus[item.status] = (byStatus[item.status] || 0) + 1;
+    byPrioridade[item.prioridade] = (byPrioridade[item.prioridade] || 0) + 1;
+  }
+
+  res.json({ total: filtered.length, byStatus, byPrioridade });
 });
 
 app.post('/api/pautas/import-csv', (req, res) => {
@@ -150,9 +177,23 @@ app.patch('/api/pautas/:id', (req, res) => {
   const idx = pautas.findIndex((p) => String(p.id) === String(req.params.id));
   if (idx < 0) return res.status(404).json({ message: 'Pauta não encontrada' });
 
-  pautas[idx] = normalizePauta({ ...pautas[idx], ...req.body, id: pautas[idx].id, createdAt: pautas[idx].createdAt });
+  pautas[idx] = normalizePauta({
+    ...pautas[idx],
+    ...req.body,
+    id: pautas[idx].id,
+    createdAt: pautas[idx].createdAt,
+    updatedAt: new Date().toISOString(),
+  });
   savePautas(pautas);
   res.json(pautas[idx]);
+});
+
+app.delete('/api/pautas/:id', (req, res) => {
+  const before = pautas.length;
+  pautas = pautas.filter((p) => String(p.id) !== String(req.params.id));
+  if (pautas.length === before) return res.status(404).json({ message: 'Pauta não encontrada' });
+  savePautas(pautas);
+  return res.status(204).send();
 });
 
 app.post('/api/pautas', (req, res) => {

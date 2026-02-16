@@ -48,14 +48,37 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 button.ghost {
   background: #27304f;
+}
+
+button.danger {
+  background: #be123c;
 }
 
 .toolbar {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto auto;
   gap: 8px;
+}
+
+.analytics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: #1f2947;
+  border: 1px solid #2b3158;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 
 .new-card {
@@ -93,16 +116,29 @@ button.ghost {
   gap: 6px;
 }
 
+.row-actions {
+  grid-template-columns: 1fr 1fr;
+}
+
+.pager {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
 small {
   color: #9ca3af;
 }
 
 @media (max-width: 900px) {
-  .toolbar {
+  .toolbar,
+  .row,
+  .row-actions {
     grid-template-columns: 1fr;
   }
 
-  .row {
-    grid-template-columns: 1fr;
+  .pager {
+    flex-direction: column;
   }
 }

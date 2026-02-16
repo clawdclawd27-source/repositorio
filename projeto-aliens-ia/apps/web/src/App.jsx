@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const API = 'http://localhost:4010/api';
 
@@ -21,22 +21,34 @@ export function App() {
   const [prioridade, setPrioridade] = useState('');
   const [newPauta, setNewPauta] = useState(emptyNew);
   const [loading, setLoading] = useState(false);
+  const [meta, setMeta] = useState({ page: 1, limit: 12, total: 0, pages: 1 });
+  const [analytics, setAnalytics] = useState(null);
 
-  async function load() {
+  async function load(targetPage = meta.page) {
     setLoading(true);
     const params = new URLSearchParams();
     if (q.trim()) params.set('q', q.trim());
     if (status) params.set('status', status);
     if (prioridade) params.set('prioridade', prioridade);
+    params.set('page', String(targetPage));
+    params.set('limit', String(meta.limit));
 
-    const r = await fetch(`${API}/pautas?${params.toString()}`);
-    const d = await r.json();
-    setPautas(d);
+    const [listRes, analyticsRes] = await Promise.all([
+      fetch(`${API}/pautas?${params.toString()}`),
+      fetch(`${API}/pautas/analytics?${params.toString()}`),
+    ]);
+
+    const listData = await listRes.json();
+    const analyticsData = await analyticsRes.json();
+
+    setPautas(listData.data || []);
+    setMeta(listData.meta || { page: 1, limit: 12, total: 0, pages: 1 });
+    setAnalytics(analyticsData);
     setLoading(false);
   }
 
   useEffect(() => {
-    void load();
+    void load(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -46,7 +58,13 @@ export function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
     });
-    await load();
+    await load(meta.page);
+  }
+
+  async function remove(id) {
+    await fetch(`${API}/pautas/${id}`, { method: 'DELETE' });
+    const fallbackPage = meta.page > 1 && pautas.length === 1 ? meta.page - 1 : meta.page;
+    await load(fallbackPage);
   }
 
   async function createPauta(e) {
@@ -60,7 +78,7 @@ export function App() {
       }),
     });
     setNewPauta(emptyNew);
-    await load();
+    await load(1);
   }
 
   async function importCsv(mode = 'merge') {
@@ -69,10 +87,8 @@ export function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode }),
     });
-    await load();
+    await load(1);
   }
-
-  const visible = useMemo(() => pautas, [pautas]);
 
   return (
     <div className="wrap">
@@ -90,9 +106,17 @@ export function App() {
           <option value="">Todas prioridades</option>
           {priorityOpt.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
-        <button onClick={() => load()}>Filtrar</button>
+        <button onClick={() => load(1)}>Filtrar</button>
         <button className="ghost" onClick={() => importCsv('merge')}>Importar CSV (merge)</button>
       </section>
+
+      {analytics && (
+        <section className="analytics">
+          <div className="chip">Total: {analytics.total}</div>
+          {statusOpt.map((s) => <div key={s} className="chip">{s}: {analytics.byStatus?.[s] ?? 0}</div>)}
+          {priorityOpt.map((p) => <div key={p} className="chip">Prioridade {p}: {analytics.byPrioridade?.[p] ?? 0}</div>)}
+        </section>
+      )}
 
       <section className="new-card">
         <h2>Nova pauta</h2>
@@ -128,7 +152,7 @@ export function App() {
       </section>
 
       <section className="grid">
-        {visible.map((p) => (
+        {pautas.map((p) => (
           <article key={p.id} className="card">
             <input value={p.titulo} onChange={(e) => setPautas((prev) => prev.map((x) => x.id === p.id ? { ...x, titulo: e.target.value } : x))} />
             <textarea rows={4} value={p.descricao || ''} onChange={(e) => setPautas((prev) => prev.map((x) => x.id === p.id ? { ...x, descricao: e.target.value } : x))} />
@@ -142,12 +166,21 @@ export function App() {
               </select>
               <input type="time" value={p.horaPublicacao || ''} onChange={(e) => setPautas((prev) => prev.map((x) => x.id === p.id ? { ...x, horaPublicacao: e.target.value } : x))} />
             </div>
-            <button onClick={() => save(p)}>Salvar</button>
+            <div className="row row-actions">
+              <button onClick={() => save(p)}>Salvar</button>
+              <button className="danger" onClick={() => remove(p.id)}>Excluir</button>
+            </div>
           </article>
         ))}
       </section>
 
-      {loading ? <small>Carregando...</small> : <small>{visible.length} pauta(s)</small>}
+      <section className="pager">
+        <button disabled={meta.page <= 1} onClick={() => load(meta.page - 1)}>← Anterior</button>
+        <span>Página {meta.page} de {meta.pages}</span>
+        <button disabled={meta.page >= meta.pages} onClick={() => load(meta.page + 1)}>Próxima →</button>
+      </section>
+
+      {loading ? <small>Carregando...</small> : <small>{meta.total} pauta(s)</small>}
     </div>
   );
 }
