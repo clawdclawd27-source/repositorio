@@ -1,0 +1,9 @@
+{
+  "name": "projeto-aliens-ia",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev:api": "cd apps/api && npm install && npm run dev",
+    "dev:web": "cd apps/web && npm install && npm run dev"
+  }
+}
