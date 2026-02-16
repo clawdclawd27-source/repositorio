@@ -12,8 +12,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const csvPath = path.resolve(__dirname, '../../../data/processed/videos.csv');
-const dbPath = path.resolve(__dirname, '../../../data/processed/pautas.json');
+const repoDataDir = path.resolve(__dirname, '../../../data/processed');
+const localDataDir = path.resolve(process.cwd(), 'data/processed');
+const runtimeDataDir = path.resolve(process.cwd(), '.data');
+
+const dataDir = fs.existsSync(repoDataDir)
+  ? repoDataDir
+  : fs.existsSync(localDataDir)
+    ? localDataDir
+    : runtimeDataDir;
+
+const csvPath = path.join(dataDir, 'videos.csv');
+const dbPath = path.join(dataDir, 'pautas.json');
 
 const STATUS_OPT = ['NOVO', 'EM_ROTEIRO', 'PRONTO', 'PUBLICADO'];
 const PRIORITY_OPT = ['A', 'M', 'B'];
