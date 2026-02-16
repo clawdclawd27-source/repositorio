@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const API = 'http://localhost:4010/api';
+const API = 'https://repositorio-production-14b9.up.railway.app/api';
 
 const statusOpt = ['NOVO', 'EM_ROTEIRO', 'PRONTO', 'PUBLICADO'];
 const priorityOpt = ['A', 'M', 'B'];
