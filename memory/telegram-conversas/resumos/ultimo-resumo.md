@@ -1,22 +1,20 @@
 # Resumo diário — conversas Telegram
 
-Data/hora da coleta: 2026-02-16 18:00 (America/Sao_Paulo)
+Data/hora da coleta: 2026-02-23 18:00 (America/Sao_Paulo)
 Sessão analisada: `agent:main:main` (origem Telegram `telegram:8004185123`)
-Janela nova analisada: após o resumo de 2026-02-15 18:00
+Janela nova analisada: após o resumo de 2026-02-16 18:00
 
 ## Principais decisões
-- Prioridade mudou para **criar um novo projeto (“projeto-aliens-ia”)** e depois voltar aos ajustes pendentes da clínica.
-- Foi iniciado um fluxo prático de deploy: build do frontend, publicação no Cloudflare e tentativas de estabilizar backend no Railway.
-- Foram aplicados commits de correção para produção:
-  - `de84bf01` (ajuste de caminho de dados da API no Railway),
-  - `a24fd928` e `82f7cb0c` (ajustes de `railway.json` para build/start com ou sem root directory).
+- O usuário pediu retomada explícita do contexto do projeto (“onde paramos”) e direcionou continuidade imediata (“continue”).
+- Foi confirmada autorização para execução direta das pendências técnicas (“faça isso para mim”), com foco em destravar automações/deploy.
+- Permanece o foco prático em resolver bloqueios operacionais antes de novas frentes (cron de resumo e estabilidade de deploy).
 
 ## Tarefas abertas
-- Confirmar no Railway que o serviço da API está usando a configuração correta após os commits mais recentes (`82f7cb0c`) e validar endpoint sem 404/502.
-- Finalizar validação ponta a ponta do novo projeto em produção (frontend + API).
-- Retomar as pendências da clínica após estabilizar o novo projeto, conforme combinado.
+- Corrigir a automação do resumo diário para usar `python3` (ambiente sem `python`).
+- Ajustar a rotina para não quebrar quando faltar arquivo diário de memória (ex.: `memory/2026-02-21.md`).
+- Retomar validação do backend no Railway (redeploy + healthcheck `/health`) no fluxo do projeto Aliens IA.
 
 ## Preferências do usuário observadas
-- Mantém preferência por execução “faça pra mim” com mínima fricção e checkpoints curtos.
-- Quando há bloqueio de permissão/acesso em painel externo, prefere que eu faça o máximo possível e deixe para ele apenas o clique final.
-- Aceita tratar permissões administrativas depois (“quando for a hora certa”), sem interromper o avanço do trabalho atual.
+- Prefere retomada rápida de contexto ao voltar para a conversa, seguida de execução direta.
+- Usa confirmações curtas (“sim”, “continue”, “faça isso para mim”) e espera avanço autônomo sem fricção.
+- Mantém preferência por comunicação objetiva, com próximos passos claros quando há bloqueio técnico.
