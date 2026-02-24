@@ -1,18 +1,20 @@
 # Resumo diário — conversas Telegram
 
-Data/hora da coleta: 2026-02-24 10:36 (America/Sao_Paulo)
+Data/hora da coleta: 2026-02-24 12:00 (America/Sao_Paulo)
 Sessão analisada: `agent:main:main` (origem Telegram `telegram:8004185123`)
-Janela nova analisada: após o resumo de 2026-02-24 00:00
+Janela nova analisada: após o resumo de 2026-02-24 10:36
 
 ## Principais decisões
-- O usuário pediu execução imediata para corrigir a automação com `python3`.
-- O usuário também pediu robustez explícita para tolerar ausência de arquivos diários de memória sem falhar.
+- Foi concluído deploy/validação do projeto **Aliens IA** em produção (frontend Cloudflare + API Railway), com testes de health e CRUD.
+- Para evitar bloqueios por Relay instável, foi adotado fallback prático quando necessário e retomada automática assim que possível.
+- Foi implementado smoke test automatizado (`npm run smoke:prod`) e feito commit/push da automação.
+- Foi criado agendamento de smoke a cada 6h com política de **alerta somente em falha**.
 
 ## Tarefas abertas
-- Aplicar/validar a correção da rotina para usar `python3` (sem uso de `python`).
-- Garantir tratamento tolerante de `memory/YYYY-MM-DD.md` ausente (ignorar e continuar).
-- Após ajuste, manter o fluxo de resumo diário estável nas próximas execuções.
+- Acompanhar próximas execuções do job de smoke (`Smoke prod Aliens IA`) e agir apenas se houver falha.
+- Em caso de falha futura, enviar diagnóstico curto e próximo passo objetivo.
 
 ## Preferências do usuário observadas
-- Prefere comandos curtos e diretos com execução imediata.
-- Espera correções práticas com foco em robustez operacional (sem travar por erro evitável).
+- Reforçou preferência por execução **100% automática**, sem depender de cliques manuais dele.
+- Prefere confirmação objetiva de funcionamento com evidências práticas (frontend/API/CRUD).
+- Aceita monitoramento contínuo com comunicação enxuta (silêncio quando ok, alerta só quando quebrar).

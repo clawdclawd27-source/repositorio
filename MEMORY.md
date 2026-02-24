@@ -12,3 +12,4 @@
 - No desenho de permissões, prefere separação rígida entre painel da clínica (ADMIN/OWNER) e painel do cliente, com experiência do cliente mais clean e acesso restrito.
 - Valoriza que o app reflita a identidade real da clínica (branding/textos/estilo), inclusive usando referências externas como Instagram para guiar o visual.
 - Em fluxos com bloqueio de acesso/permissão, prefere que eu avance até o limite e deixe para ele só a ação final necessária (ex.: clique/aceite), sem travar o progresso.
+- Quando possível, prefere automação completa sem cliques manuais dele; para rotinas de verificação, aprova modelo de alerta apenas em falha (silêncio quando está tudo ok).
