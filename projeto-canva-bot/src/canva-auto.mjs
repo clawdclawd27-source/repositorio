@@ -47,40 +47,52 @@ if (!headless) {
   await page.waitForTimeout(2500);
 }
 
-for (const scene of scenes) {
+const fillMode = String(process.env.CANVA_FILL_MODE || 'hybrid'); // hybrid | placeholder | position
+
+async function fillEditableByIndex(index, texto) {
+  const editables = page.locator('textarea, [contenteditable="true"]');
+  const count = await editables.count();
+  if (count === 0) return false;
+
+  const target = editables.nth(Math.min(index, count - 1));
+  if (!(await target.isVisible().catch(() => false))) return false;
+
+  await target.click({ clickCount: 2 });
+  await page.keyboard.press('Control+A');
+  await page.keyboard.type(texto, { delay: 8 });
+  return true;
+}
+
+for (let i = 0; i < scenes.length; i++) {
+  const scene = scenes[i];
   const token = `{{CENA_${scene.id}}}`;
   const texto = String(scene.texto || '').trim();
   if (!texto) continue;
 
   console.log(`✏️ Preenchendo ${token}...`);
-
   let replaced = false;
 
-  // Tentativa 1: localizar placeholder exato na tela
-  const placeholder = page.getByText(token, { exact: true }).first();
-  if (await placeholder.isVisible().catch(() => false)) {
-    await placeholder.click({ clickCount: 2 });
-    await page.keyboard.press('Control+A');
-    await page.keyboard.type(texto, { delay: 10 });
-    replaced = true;
-  }
-
-  // Tentativa 2: fallback em textbox ativa
-  if (!replaced) {
-    const tb = page.locator('textarea, [contenteditable="true"]').first();
-    if (await tb.isVisible().catch(() => false)) {
-      await tb.click();
+  // Estratégia 1: placeholder explícito
+  if (fillMode === 'hybrid' || fillMode === 'placeholder') {
+    const placeholder = page.getByText(token, { exact: true }).first();
+    if (await placeholder.isVisible().catch(() => false)) {
+      await placeholder.click({ clickCount: 2 });
       await page.keyboard.press('Control+A');
-      await page.keyboard.type(texto, { delay: 10 });
+      await page.keyboard.type(texto, { delay: 8 });
       replaced = true;
     }
+  }
+
+  // Estratégia 2: por posição fixa (sem placeholder)
+  if (!replaced && (fillMode === 'hybrid' || fillMode === 'position')) {
+    replaced = await fillEditableByIndex(i, texto);
   }
 
   if (!replaced) {
     console.warn(`⚠️ Não consegui preencher ${token} automaticamente.`);
   }
 
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(500);
 }
 
 console.log('✅ Cenas processadas.');

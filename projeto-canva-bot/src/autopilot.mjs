@@ -63,6 +63,7 @@ async function main() {
 
   const canvaLog = await runNode(['src/canva-auto.mjs', payloadPath, canvaTemplateUrl], {
     CANVA_HEADLESS: 'true',
+    CANVA_FILL_MODE: 'position'
   });
 
   fs.writeFileSync(statePath, JSON.stringify({ lastTheme: theme, updatedAt: new Date().toISOString() }, null, 2), 'utf-8');
