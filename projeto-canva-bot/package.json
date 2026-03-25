@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "criar": "node src/index.mjs",
-    "demo": "node src/index.mjs \"Fila dupla: pode ou não pode?\""
+    "demo": "node src/index.mjs \"Fila dupla: pode ou não pode?\"",
+    "canva:auto": "node src/canva-auto.mjs"
   },
   "dependencies": {
     "dayjs": "^1.11.13"

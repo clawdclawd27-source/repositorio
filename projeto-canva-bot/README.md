@@ -25,11 +25,19 @@ npm install
 npm run criar -- "Fila dupla: pode ou não pode?"
 ```
 
-## Próxima etapa (automação completa)
-1. Conectar bot ao navegador logado no Canva
-2. Abrir template automaticamente
-3. Preencher caixas de texto a partir de `canva-fill.json`
-4. Exportar MP4 e salvar no diretório `output`
+## Automação Canva (fase 2 - preenchimento)
+Com template pronto no Canva (recomendado com placeholders `{{CENA_1}}`, `{{CENA_2}}`...), rode:
+
+```bash
+npm run canva:auto -- "output/PASTA_DO_VIDEO/canva-fill.json" "URL_DO_DESIGN_CANVA"
+```
+
+O bot abre o Canva, tenta localizar cada placeholder e substituir pelos textos do payload.
+
+## Próxima etapa (fase 3)
+1. Automatizar exportação (MP4)
+2. Salvar arquivo final em `output/...`
+3. Opcional: publicar em plataformas
 
 ## Observação
 A automação do Canva depende de sessão logada e pode exigir ajuste fino quando o layout mudar.
