@@ -7,26 +7,29 @@
     <style>
       :root { --bg:#0b1020; --card:#121a31; --line:#263252; --text:#ecf1ff; --muted:#aab7db; --acc:#7c3aed; }
       *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
-      .wrap{max-width:980px;margin:40px auto;padding:0 16px}
+      .wrap{max-width:1100px;margin:30px auto;padding:0 16px}
       h1{margin:0 0 6px} p{margin:0;color:var(--muted)}
       .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
       .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
       label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
       input,textarea{width:100%;background:#0f1730;border:1px solid #2a375d;color:var(--text);padding:10px;border-radius:10px}
       button{margin-top:12px;background:var(--acc);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-      button:disabled{opacity:.6;cursor:not-allowed}
-      pre{white-space:pre-wrap;background:#0a1229;border:1px solid #243157;border-radius:10px;padding:12px;min-height:170px}
-      .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+      pre{white-space:pre-wrap;background:#0a1229;border:1px solid #243157;border-radius:10px;padding:12px;min-height:140px;max-height:260px;overflow:auto}
+      .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px;flex-wrap:wrap}
+      table{width:100%;border-collapse:collapse;font-size:13px}
+      th,td{border-bottom:1px solid #273357;padding:8px;text-align:left}
+      .ok{color:#59e28e}.erro{color:#ff7f8e}.pendente{color:#ffd27d}
       @media (max-width:900px){.grid{grid-template-columns:1fr}}
     </style>
   </head>
   <body>
     <div class="wrap">
       <h1>Canva Bot Studio</h1>
-      <p>Painel simples e profissional para gerar e automatizar vídeos no Canva.</p>
+      <p>Painel profissional para criação, automação e operação do pipeline de vídeos.</p>
 
       <div class="row">
         <small id="status">Status: carregando...</small>
+        <small id="queue">Fila: 0</small>
       </div>
 
       <div class="grid">
@@ -38,7 +41,7 @@
         </section>
 
         <section class="card">
-          <h3>2) Automatizar Canva</h3>
+          <h3>2) Automação Canva</h3>
           <label>Caminho do canva-fill.json</label>
           <input id="payload" placeholder="output/.../canva-fill.json" />
           <label>URL do design no Canva</label>
@@ -47,22 +50,60 @@
         </section>
       </div>
 
+      <div class="grid" style="margin-top:16px">
+        <section class="card">
+          <h3>3) Exportação final</h3>
+          <label>Nome sugerido do MP4</label>
+          <input id="outputName" placeholder="video-final.mp4" />
+          <button id="btnExport">Registrar exportação</button>
+          <small style="display:block;margin-top:8px;color:#aab7db">(Export automático total entra na próxima fase)</small>
+        </section>
+
+        <section class="card">
+          <h3>Logs</h3>
+          <pre id="log">Aguardando ação...</pre>
+        </section>
+      </div>
+
       <section class="card" style="margin-top:16px">
-        <h3>Logs</h3>
-        <pre id="log">Aguardando ação...</pre>
+        <h3>Histórico de Jobs</h3>
+        <table>
+          <thead>
+            <tr><th>Data</th><th>Tipo</th><th>Status</th><th>Entrada</th></tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="4">Sem histórico ainda.</td></tr>
+          </tbody>
+        </table>
       </section>
     </div>
 
     <script>
       const statusEl = document.getElementById('status');
+      const queueEl = document.getElementById('queue');
       const logEl = document.getElementById('log');
-      const btnCriar = document.getElementById('btnCriar');
-      const btnAuto = document.getElementById('btnAuto');
+      const historyBody = document.getElementById('historyBody');
 
       async function refreshStatus(){
         const r = await fetch('/api/status');
         const s = await r.json();
         statusEl.textContent = `Status: ${s.running ? 'executando...' : 'pronto'}`;
+        queueEl.textContent = `Fila: ${s.queued}`;
+        logEl.textContent = s.lastLog || 'Sem logs.';
+
+        if (!s.history?.length) {
+          historyBody.innerHTML = '<tr><td colspan="4">Sem histórico ainda.</td></tr>';
+        } else {
+          historyBody.innerHTML = s.history.map(h => {
+            const cls = h.status === 'ok' ? 'ok' : h.status === 'erro' ? 'erro' : 'pendente';
+            return `<tr>
+              <td>${new Date(h.at).toLocaleString('pt-BR')}</td>
+              <td>${h.type}</td>
+              <td class="${cls}">${h.status}</td>
+              <td><code>${JSON.stringify(h.input || {})}</code></td>
+            </tr>`;
+          }).join('');
+        }
       }
 
       async function post(url, body){
@@ -72,29 +113,32 @@
         return data;
       }
 
-      btnCriar.onclick = async () => {
+      document.getElementById('btnCriar').onclick = async () => {
         try{
-          btnCriar.disabled = true;
-          logEl.textContent = 'Processando criação...';
           const tema = document.getElementById('tema').value.trim();
           const out = await post('/api/create',{tema});
-          logEl.textContent = out.log || 'Concluído.';
-        }catch(e){
-          logEl.textContent = `Erro: ${e.message}`;
-        }finally{btnCriar.disabled=false; refreshStatus();}
+          logEl.textContent = out.message || 'Job enfileirado.';
+        }catch(e){ logEl.textContent = `Erro: ${e.message}`; }
+        refreshStatus();
       };
 
-      btnAuto.onclick = async () => {
+      document.getElementById('btnAuto').onclick = async () => {
         try{
-          btnAuto.disabled = true;
-          logEl.textContent = 'Executando automação Canva...';
           const payload = document.getElementById('payload').value.trim();
           const designUrl = document.getElementById('designUrl').value.trim();
           const out = await post('/api/canva-auto',{payload,designUrl});
-          logEl.textContent = out.log || 'Concluído.';
-        }catch(e){
-          logEl.textContent = `Erro: ${e.message}`;
-        }finally{btnAuto.disabled=false; refreshStatus();}
+          logEl.textContent = out.message || 'Job enfileirado.';
+        }catch(e){ logEl.textContent = `Erro: ${e.message}`; }
+        refreshStatus();
+      };
+
+      document.getElementById('btnExport').onclick = async () => {
+        try{
+          const outputName = document.getElementById('outputName').value.trim();
+          const out = await post('/api/export',{outputName});
+          logEl.textContent = out.message || 'Exportação registrada.';
+        }catch(e){ logEl.textContent = `Erro: ${e.message}`; }
+        refreshStatus();
       };
 
       refreshStatus();

@@ -12,6 +12,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let running = false;
 let lastLog = 'Sistema pronto.';
+const queue = [];
+const history = [];
+
+function addHistory(item) {
+  history.unshift({ id: Date.now() + Math.random(), at: new Date().toISOString(), ...item });
+  if (history.length > 50) history.pop();
+}
 
 function runNodeScript(args = []) {
   return new Promise((resolve, reject) => {
@@ -32,47 +39,69 @@ function runNodeScript(args = []) {
   });
 }
 
-app.get('/api/status', (_req, res) => {
-  res.json({ running, lastLog });
-});
-
-app.post('/api/create', async (req, res) => {
-  const tema = String(req.body?.tema || '').trim();
-  if (!tema) return res.status(400).json({ message: 'Tema é obrigatório.' });
-  if (running) return res.status(409).json({ message: 'Já existe um processo em execução.' });
-
+async function processNext() {
+  if (running || queue.length === 0) return;
+  const job = queue.shift();
   running = true;
+
   try {
-    const out = await runNodeScript(['src/index.mjs', tema]);
+    const out = await runNodeScript(job.args);
     lastLog = out;
-    return res.json({ ok: true, log: out });
+    addHistory({ type: job.type, status: 'ok', input: job.input, log: out.slice(0, 1200) });
   } catch (err) {
     lastLog = err.message;
-    return res.status(500).json({ ok: false, message: err.message });
+    addHistory({ type: job.type, status: 'erro', input: job.input, log: err.message.slice(0, 1200) });
   } finally {
     running = false;
+    setTimeout(processNext, 50);
   }
+}
+
+app.get('/api/status', (_req, res) => {
+  res.json({ running, queued: queue.length, lastLog, history });
 });
 
-app.post('/api/canva-auto', async (req, res) => {
+app.post('/api/create', (req, res) => {
+  const tema = String(req.body?.tema || '').trim();
+  if (!tema) return res.status(400).json({ message: 'Tema é obrigatório.' });
+
+  queue.push({
+    type: 'create',
+    input: { tema },
+    args: ['src/index.mjs', tema],
+  });
+  processNext();
+  return res.json({ ok: true, queued: queue.length, message: 'Job de criação enfileirado.' });
+});
+
+app.post('/api/canva-auto', (req, res) => {
   const payload = String(req.body?.payload || '').trim();
   const designUrl = String(req.body?.designUrl || '').trim();
   if (!payload || !designUrl) {
     return res.status(400).json({ message: 'payload e designUrl são obrigatórios.' });
   }
-  if (running) return res.status(409).json({ message: 'Já existe um processo em execução.' });
 
-  running = true;
-  try {
-    const out = await runNodeScript(['src/canva-auto.mjs', payload, designUrl]);
-    lastLog = out;
-    return res.json({ ok: true, log: out });
-  } catch (err) {
-    lastLog = err.message;
-    return res.status(500).json({ ok: false, message: err.message });
-  } finally {
-    running = false;
-  }
+  queue.push({
+    type: 'canva-auto',
+    input: { payload, designUrl },
+    args: ['src/canva-auto.mjs', payload, designUrl],
+  });
+  processNext();
+  return res.json({ ok: true, queued: queue.length, message: 'Job de automação enfileirado.' });
+});
+
+app.post('/api/export', (req, res) => {
+  const outputName = String(req.body?.outputName || '').trim() || `video-${Date.now()}.mp4`;
+  addHistory({
+    type: 'export',
+    status: 'pendente-manual',
+    input: { outputName },
+    log: 'Exportação automática ainda em fase beta. Use Canva: Compartilhar > Baixar > MP4. Nome sugerido: ' + outputName,
+  });
+  return res.json({
+    ok: true,
+    message: 'Exportação registrada no histórico. Próxima fase: exportação 100% automática no Canva.',
+  });
 });
 
 const port = process.env.PORT || 4177;
