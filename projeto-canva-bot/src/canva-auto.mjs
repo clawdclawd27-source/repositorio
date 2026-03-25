@@ -31,15 +31,21 @@ if (!scenes.length) {
   process.exit(1);
 }
 
-const browser = await chromium.launch({ headless: false, slowMo: 120 });
+const headless = String(process.env.CANVA_HEADLESS || 'true') === 'true';
+const browser = await chromium.launch({ headless, slowMo: headless ? 0 : 120 });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
 
 console.log('🌐 Abrindo Canva...');
 await page.goto(designUrl, { waitUntil: 'domcontentloaded' });
 
-console.log('🔐 Se necessário, faça login no Canva na janela aberta.');
-await page.waitForTimeout(8000);
+if (!headless) {
+  console.log('🔐 Se necessário, faça login no Canva na janela aberta.');
+  await page.waitForTimeout(8000);
+} else {
+  console.log('ℹ️ Modo headless ativo. Tentando seguir automaticamente.');
+  await page.waitForTimeout(2500);
+}
 
 for (const scene of scenes) {
   const token = `{{CENA_${scene.id}}}`;
