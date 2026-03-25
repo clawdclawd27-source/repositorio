@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -12,17 +12,8 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const existing = await this.usersService.findByEmail(dto.email);
-    if (existing) throw new BadRequestException('E-mail já cadastrado');
-
-    const user = await this.usersService.createUser(dto);
-    return this.signToken({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-      clientProfileId: (user as any).clientProfileId ?? null,
-    });
+    void dto;
+    throw new ForbiddenException('Cadastro público desativado. Solicite criação de conta pela clínica.');
   }
 
   async login(dto: LoginDto) {

@@ -6,11 +6,12 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "scripts": {
-    "start": "node dist/src/main.js",
+    "start": "npm run prisma:deploy && node dist/src/main.js",
     "start:dev": "nest start --watch",
-    "serve:stable": "node dist/src/main.js",
+    "serve:stable": "npm run prisma:deploy && node dist/src/main.js",
     "start:stable": "npm run build && npm run serve:stable",
     "build": "nest build",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
@@ -26,6 +27,7 @@
     "@nestjs/platform-express": "^10.4.15",
     "@nestjs/schedule": "^4.1.1",
     "@prisma/client": "^6.3.1",
+    "prisma": "^6.3.1",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -42,7 +44,6 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "@types/passport-jwt": "^4.0.1",
-    "prisma": "^6.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }
