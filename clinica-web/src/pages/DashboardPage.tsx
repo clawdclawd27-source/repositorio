@@ -11,27 +11,27 @@ type Shortcut = {
 };
 
 const clinicShortcuts: Shortcut[] = [
-  { label: 'Clientes', subtitle: 'Cadastro, edição e contato', cta: 'Abrir', path: '/clientes', icon: '👥', enabled: true },
-  { label: 'Consultas', subtitle: 'Agenda do dia e confirmações', cta: 'Abrir', path: '/consultas', icon: '📅', enabled: true },
-  { label: 'Tarefas', subtitle: 'Pendências e prazos da equipe', cta: 'Abrir', path: '/tarefas', icon: '✅', enabled: true },
-  { label: 'Aniversários', subtitle: 'Hoje e lista do mês', cta: 'Abrir', path: '/aniversarios', icon: '🎂', enabled: true },
-  { label: 'Serviços', subtitle: 'Catálogo e preços', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
-  { label: 'Financeiro', subtitle: 'Pacotes, vendas e saldos', cta: 'Abrir', path: '/financeiro', icon: '💳', enabled: true },
-  { label: 'Estoque', subtitle: 'Produtos, consumo e alertas', cta: 'Abrir', path: '/estoque', icon: '📦', enabled: true },
-  { label: 'Relatórios', subtitle: 'Indicadores de negócio', cta: 'Abrir', path: '/relatorios', icon: '📊', enabled: true },
-  { label: 'Indicações', subtitle: 'Indicações e conversão', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
-  { label: 'Notificações', subtitle: 'Histórico de envios', cta: 'Abrir', path: '/notificacoes', icon: '🔔', enabled: true },
-  { label: 'Configurações', subtitle: 'Preferências do sistema', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
-  { label: 'Portal Cliente', subtitle: 'Visão do cliente final', cta: 'Abrir', path: '/portal-cliente', icon: '🙍', enabled: true },
-  { label: 'Ajuda Operacional', subtitle: 'POP diário da equipe', cta: 'Abrir', path: '/ajuda-operacional', icon: '🧭', enabled: true },
+  { label: 'Clientes', subtitle: 'Cadastro, edição e contato', cta: 'Abrir', path: '/clientes', icon: 'CL', enabled: true },
+  { label: 'Consultas', subtitle: 'Agenda do dia e confirmações', cta: 'Abrir', path: '/consultas', icon: 'AG', enabled: true },
+  { label: 'Tarefas', subtitle: 'Pendências e prazos da equipe', cta: 'Abrir', path: '/tarefas', icon: 'TK', enabled: true },
+  { label: 'Aniversários', subtitle: 'Hoje e lista do mês', cta: 'Abrir', path: '/aniversarios', icon: 'AN', enabled: true },
+  { label: 'Serviços', subtitle: 'Catálogo e preços', cta: 'Abrir', path: '/servicos', icon: 'SV', enabled: true },
+  { label: 'Financeiro', subtitle: 'Pacotes, vendas e saldos', cta: 'Abrir', path: '/financeiro', icon: 'FN', enabled: true },
+  { label: 'Estoque', subtitle: 'Produtos, consumo e alertas', cta: 'Abrir', path: '/estoque', icon: 'ET', enabled: true },
+  { label: 'Relatórios', subtitle: 'Indicadores de negócio', cta: 'Abrir', path: '/relatorios', icon: 'RL', enabled: true },
+  { label: 'Indicações', subtitle: 'Indicações e conversão', cta: 'Abrir', path: '/indicacoes', icon: 'IN', enabled: true },
+  { label: 'Notificações', subtitle: 'Histórico de envios', cta: 'Abrir', path: '/notificacoes', icon: 'NT', enabled: true },
+  { label: 'Configurações', subtitle: 'Preferências do sistema', cta: 'Abrir', path: '/configuracoes', icon: 'CF', enabled: true },
+  { label: 'Portal Cliente', subtitle: 'Visão do cliente final', cta: 'Abrir', path: '/portal-cliente', icon: 'PC', enabled: true },
+  { label: 'Ajuda Operacional', subtitle: 'POP diário da equipe', cta: 'Abrir', path: '/ajuda-operacional', icon: 'AJ', enabled: true },
 ];
 
 const clientShortcuts: Shortcut[] = [
-  { label: 'Portal Cliente', subtitle: 'Minha visão pessoal', cta: 'Abrir', path: '/portal-cliente', icon: '🙍', enabled: true },
-  { label: 'Notificações', subtitle: 'Alertas de consultas e agendamentos', cta: 'Abrir', path: '/portal-notificacoes', icon: '🔔', enabled: true },
-  { label: 'Serviços', subtitle: 'Facial e corporal com equipe especializada', cta: 'Abrir', path: '/servicos', icon: '🧴', enabled: true },
-  { label: 'Indicações', subtitle: 'Indique e acompanhe o status', cta: 'Abrir', path: '/indicacoes', icon: '🤝', enabled: true },
-  { label: 'Configurações', subtitle: 'Ajustes da conta', cta: 'Abrir', path: '/configuracoes', icon: '⚙️', enabled: true },
+  { label: 'Portal Cliente', subtitle: 'Minha visão pessoal', cta: 'Abrir', path: '/portal-cliente', icon: 'PC', enabled: true },
+  { label: 'Notificações', subtitle: 'Alertas de consultas e agendamentos', cta: 'Abrir', path: '/portal-notificacoes', icon: 'NT', enabled: true },
+  { label: 'Serviços', subtitle: 'Facial e corporal com equipe especializada', cta: 'Abrir', path: '/servicos', icon: 'SV', enabled: true },
+  { label: 'Indicações', subtitle: 'Indique e acompanhe o status', cta: 'Abrir', path: '/indicacoes', icon: 'IN', enabled: true },
+  { label: 'Configurações', subtitle: 'Ajustes da conta', cta: 'Abrir', path: '/configuracoes', icon: 'CF', enabled: true },
 ];
 
 export function DashboardPage() {

@@ -122,8 +122,7 @@ button { background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%); color: #f
 small { color: #be123c; }
 .password-row { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
 .eye-btn { padding: 0 12px; border: 1px solid #e9d5ff; background: #fff; color: #6b5a7a; }
-.login-links { display: flex; justify-content: space-between; font-size: 13px; }
-.login-links a { color: #7c3aed; }
+.login-links { display: grid; gap: 4px; font-size: 13px; }
 
 .tasks-page { display: grid; gap: 12px; }
 .tasks-head { display: flex; justify-content: space-between; align-items: center; }

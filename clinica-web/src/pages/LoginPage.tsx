@@ -51,7 +51,7 @@ export function LoginPage() {
         <button type="submit">Entrar</button>
 
         <div className="login-links">
-          <a href="#" onClick={(e) => e.preventDefault()}>Esqueci minha senha</a>
+          <span style={{ color: '#7b6c89', fontSize: 13 }}>Recuperação de acesso: solicitar direto com a clínica</span>
           <span style={{ color: '#7b6c89', fontSize: 13 }}>Cadastro somente pela clínica</span>
         </div>
       </form>
