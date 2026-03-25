@@ -48,6 +48,18 @@ Credencial inicial:
 - usuário: `admin`
 - senha: `admin123`
 
+## Modo automático (sem pedir)
+Rodar manualmente:
+```bash
+npm run autopilot
+```
+
+Esse modo:
+1. escolhe tema automaticamente em `data/themes-transito.json`
+2. gera roteiro curto (até 11s)
+3. tenta aplicar no template Canva padrão
+4. grava relatório em `output/autopilot-history.log`
+
 ## Uso direto (opcional)
 ```bash
 npm run criar -- "Fila dupla: pode ou não pode?"

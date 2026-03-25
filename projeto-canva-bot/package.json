@@ -8,7 +8,8 @@
     "web": "node src/web-server.mjs",
     "criar": "node src/index.mjs",
     "demo": "node src/index.mjs \"Fila dupla: pode ou não pode?\"",
-    "canva:auto": "node src/canva-auto.mjs"
+    "canva:auto": "node src/canva-auto.mjs",
+    "autopilot": "node src/autopilot.mjs"
   },
   "dependencies": {
     "dayjs": "^1.11.13",

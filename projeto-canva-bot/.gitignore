@@ -1,2 +1,5 @@
-data/*.json
+data/projects.json
+data/history.json
+data/users.json
+data/autopilot-state.json
 output/
