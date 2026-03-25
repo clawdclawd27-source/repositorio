@@ -1,0 +1,16 @@
+{
+  "name": "projeto-canva-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "criar": "node src/index.mjs",
+    "demo": "node src/index.mjs \"Fila dupla: pode ou não pode?\""
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.53.2"
+  }
+}
