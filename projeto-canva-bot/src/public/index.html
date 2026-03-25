@@ -1,148 +1,140 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Canva Bot Studio</title>
-    <style>
-      :root { --bg:#0b1020; --card:#121a31; --line:#263252; --text:#ecf1ff; --muted:#aab7db; --acc:#7c3aed; }
-      *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
-      .wrap{max-width:1100px;margin:30px auto;padding:0 16px}
-      h1{margin:0 0 6px} p{margin:0;color:var(--muted)}
-      .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
-      .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-      label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
-      input,textarea{width:100%;background:#0f1730;border:1px solid #2a375d;color:var(--text);padding:10px;border-radius:10px}
-      button{margin-top:12px;background:var(--acc);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-      pre{white-space:pre-wrap;background:#0a1229;border:1px solid #243157;border-radius:10px;padding:12px;min-height:140px;max-height:260px;overflow:auto}
-      .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px;flex-wrap:wrap}
-      table{width:100%;border-collapse:collapse;font-size:13px}
-      th,td{border-bottom:1px solid #273357;padding:8px;text-align:left}
-      .ok{color:#59e28e}.erro{color:#ff7f8e}.pendente{color:#ffd27d}
-      @media (max-width:900px){.grid{grid-template-columns:1fr}}
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <h1>Canva Bot Studio</h1>
-      <p>Painel profissional para criação, automação e operação do pipeline de vídeos.</p>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Canva Bot Studio</title>
+  <style>
+    body{margin:0;background:#0b1020;color:#eef2ff;font-family:Inter,Arial}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .card{background:#121a31;border:1px solid #263252;border-radius:12px;padding:14px;margin-bottom:14px}
+    input,select{width:100%;background:#0f1730;border:1px solid #2a375d;color:#eef2ff;padding:10px;border-radius:8px}
+    button{background:#7c3aed;color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    pre{background:#0a1229;border:1px solid #243157;border-radius:8px;padding:10px;max-height:180px;overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px} th,td{border-bottom:1px solid #273357;padding:7px;text-align:left}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Canva Bot Studio</h1>
 
-      <div class="row">
-        <small id="status">Status: carregando...</small>
-        <small id="queue">Fila: 0</small>
+    <section id="loginBox" class="card">
+      <h3>Login</h3>
+      <div class="grid">
+        <div><label>Usuário</label><input id="user" value="admin"></div>
+        <div><label>Senha</label><input id="pass" type="password" value="admin123"></div>
+      </div>
+      <button id="btnLogin" style="margin-top:10px">Entrar</button>
+      <small id="loginMsg"></small>
+    </section>
+
+    <section id="app" style="display:none">
+      <div class="card">
+        <strong id="kpis">KPIs: ...</strong>
       </div>
 
       <div class="grid">
         <section class="card">
-          <h3>1) Criar projeto</h3>
-          <label>Tema do vídeo</label>
-          <input id="tema" placeholder="Ex: Fila dupla: pode ou não pode?" />
-          <button id="btnCriar">Gerar roteiro + payload</button>
+          <h3>Projetos</h3>
+          <input id="projectName" placeholder="Nome do projeto">
+          <input id="clientName" placeholder="Cliente (opcional)" style="margin-top:8px">
+          <button id="btnProject" style="margin-top:8px">Criar projeto</button>
+          <label style="margin-top:8px;display:block">Projeto ativo</label>
+          <select id="projectSelect"></select>
         </section>
 
         <section class="card">
-          <h3>2) Automação Canva</h3>
-          <label>Caminho do canva-fill.json</label>
-          <input id="payload" placeholder="output/.../canva-fill.json" />
-          <label>URL do design no Canva</label>
-          <input id="designUrl" placeholder="https://www.canva.com/design/..." />
-          <button id="btnAuto">Executar automação</button>
+          <h3>Criar roteiro + payload</h3>
+          <input id="tema" placeholder="Tema do vídeo">
+          <button id="btnCriar" style="margin-top:8px">Enfileirar criação</button>
         </section>
       </div>
 
-      <div class="grid" style="margin-top:16px">
+      <div class="grid">
         <section class="card">
-          <h3>3) Exportação final</h3>
-          <label>Nome sugerido do MP4</label>
-          <input id="outputName" placeholder="video-final.mp4" />
-          <button id="btnExport">Registrar exportação</button>
-          <small style="display:block;margin-top:8px;color:#aab7db">(Export automático total entra na próxima fase)</small>
+          <h3>Automação Canva</h3>
+          <input id="payload" placeholder="output/.../canva-fill.json">
+          <input id="designUrl" placeholder="URL do design no Canva" style="margin-top:8px">
+          <button id="btnAuto" style="margin-top:8px">Enfileirar automação</button>
         </section>
 
         <section class="card">
-          <h3>Logs</h3>
-          <pre id="log">Aguardando ação...</pre>
+          <h3>Exportação</h3>
+          <input id="outputName" placeholder="video-final.mp4">
+          <button id="btnExport" style="margin-top:8px">Registrar exportação</button>
         </section>
       </div>
 
-      <section class="card" style="margin-top:16px">
-        <h3>Histórico de Jobs</h3>
-        <table>
-          <thead>
-            <tr><th>Data</th><th>Tipo</th><th>Status</th><th>Entrada</th></tr>
-          </thead>
-          <tbody id="historyBody">
-            <tr><td colspan="4">Sem histórico ainda.</td></tr>
-          </tbody>
-        </table>
+      <section class="card">
+        <h3>Status / Log</h3>
+        <small id="status"></small>
+        <pre id="log"></pre>
       </section>
-    </div>
 
-    <script>
-      const statusEl = document.getElementById('status');
-      const queueEl = document.getElementById('queue');
-      const logEl = document.getElementById('log');
-      const historyBody = document.getElementById('historyBody');
+      <section class="card">
+        <h3>Histórico</h3>
+        <table><thead><tr><th>Data</th><th>Tipo</th><th>Status</th><th>Projeto</th></tr></thead><tbody id="hist"></tbody></table>
+      </section>
+    </section>
+  </div>
 
-      async function refreshStatus(){
-        const r = await fetch('/api/status');
-        const s = await r.json();
-        statusEl.textContent = `Status: ${s.running ? 'executando...' : 'pronto'}`;
-        queueEl.textContent = `Fila: ${s.queued}`;
-        logEl.textContent = s.lastLog || 'Sem logs.';
+<script>
+let token='';
+let projects=[];
+const authHeaders=()=>({ 'Content-Type':'application/json', 'Authorization':'Bearer '+token });
 
-        if (!s.history?.length) {
-          historyBody.innerHTML = '<tr><td colspan="4">Sem histórico ainda.</td></tr>';
-        } else {
-          historyBody.innerHTML = s.history.map(h => {
-            const cls = h.status === 'ok' ? 'ok' : h.status === 'erro' ? 'erro' : 'pendente';
-            return `<tr>
-              <td>${new Date(h.at).toLocaleString('pt-BR')}</td>
-              <td>${h.type}</td>
-              <td class="${cls}">${h.status}</td>
-              <td><code>${JSON.stringify(h.input || {})}</code></td>
-            </tr>`;
-          }).join('');
-        }
-      }
+async function api(url,opt={}){
+  const r=await fetch(url,opt); const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.message||'Falha'); return d;
+}
 
-      async function post(url, body){
-        const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const data = await r.json();
-        if(!r.ok) throw new Error(data.message || 'Falha');
-        return data;
-      }
+async function loadProjects(){
+  const d=await api('/api/projects',{headers:authHeaders()});
+  projects=d.data||[];
+  const sel=document.getElementById('projectSelect');
+  sel.innerHTML=projects.map(p=>`<option value="${p.id}">${p.name}${p.client?` • ${p.client}`:''}</option>`).join('');
+}
 
-      document.getElementById('btnCriar').onclick = async () => {
-        try{
-          const tema = document.getElementById('tema').value.trim();
-          const out = await post('/api/create',{tema});
-          logEl.textContent = out.message || 'Job enfileirado.';
-        }catch(e){ logEl.textContent = `Erro: ${e.message}`; }
-        refreshStatus();
-      };
+async function refresh(){
+  const s=await api('/api/status',{headers:authHeaders()});
+  document.getElementById('status').textContent=`Status: ${s.running?'executando':'pronto'} | Fila: ${s.queued}`;
+  document.getElementById('log').textContent=s.lastLog||'';
+  document.getElementById('kpis').textContent=`KPIs • Projetos: ${s.kpis.projectCount} | Jobs OK: ${s.kpis.jobsDone} | Jobs erro: ${s.kpis.jobsFailed}`;
+  const byId=Object.fromEntries(projects.map(p=>[p.id,p.name]));
+  document.getElementById('hist').innerHTML=(s.history||[]).map(h=>`<tr><td>${new Date(h.at).toLocaleString('pt-BR')}</td><td>${h.type}</td><td>${h.status}</td><td>${byId[h.projectId]||'-'}</td></tr>`).join('')||'<tr><td colspan="4">Sem histórico</td></tr>';
+}
 
-      document.getElementById('btnAuto').onclick = async () => {
-        try{
-          const payload = document.getElementById('payload').value.trim();
-          const designUrl = document.getElementById('designUrl').value.trim();
-          const out = await post('/api/canva-auto',{payload,designUrl});
-          logEl.textContent = out.message || 'Job enfileirado.';
-        }catch(e){ logEl.textContent = `Erro: ${e.message}`; }
-        refreshStatus();
-      };
+btnLogin.onclick=async()=>{
+  try{
+    const user=document.getElementById('user').value.trim();
+    const pass=document.getElementById('pass').value.trim();
+    const d=await api('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass})});
+    token=d.token;
+    loginBox.style.display='none'; app.style.display='block';
+    await loadProjects(); await refresh(); setInterval(refresh,3000);
+  }catch(e){ document.getElementById('loginMsg').textContent='Erro: '+e.message; }
+}
 
-      document.getElementById('btnExport').onclick = async () => {
-        try{
-          const outputName = document.getElementById('outputName').value.trim();
-          const out = await post('/api/export',{outputName});
-          logEl.textContent = out.message || 'Exportação registrada.';
-        }catch(e){ logEl.textContent = `Erro: ${e.message}`; }
-        refreshStatus();
-      };
+btnProject.onclick=async()=>{
+  try{
+    await api('/api/projects',{method:'POST',headers:authHeaders(),body:JSON.stringify({name:projectName.value.trim(),client:clientName.value.trim()})});
+    projectName.value=''; clientName.value=''; await loadProjects(); await refresh();
+  }catch(e){ alert(e.message); }
+};
 
-      refreshStatus();
-      setInterval(refreshStatus, 3000);
-    </script>
-  </body>
-</html>
+btnCriar.onclick=async()=>{
+  try{ await api('/api/create',{method:'POST',headers:authHeaders(),body:JSON.stringify({tema:tema.value.trim(),projectId:projectSelect.value})}); await refresh(); }
+  catch(e){ alert(e.message); }
+};
+btnAuto.onclick=async()=>{
+  try{ await api('/api/canva-auto',{method:'POST',headers:authHeaders(),body:JSON.stringify({payload:payload.value.trim(),designUrl:designUrl.value.trim(),projectId:projectSelect.value})}); await refresh(); }
+  catch(e){ alert(e.message); }
+};
+btnExport.onclick=async()=>{
+  try{ await api('/api/export',{method:'POST',headers:authHeaders(),body:JSON.stringify({outputName:outputName.value.trim(),projectId:projectSelect.value})}); await refresh(); }
+  catch(e){ alert(e.message); }
+};
+</script>
+</body></html>

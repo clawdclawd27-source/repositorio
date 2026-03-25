@@ -35,10 +35,12 @@ npm run web
 ```
 Depois abra: `http://localhost:4177`
 
-No painel web você terá botões para:
-- Gerar projeto
-- Rodar automação Canva
-- Acompanhar logs em tempo real
+No painel web você terá:
+- Login simples (padrão: `admin` / `admin123`, configurável por env)
+- Projetos por cliente
+- Fila de jobs
+- Histórico operacional
+- KPIs básicos (projetos, jobs OK, jobs com erro)
 
 ## Uso direto (opcional)
 ```bash
