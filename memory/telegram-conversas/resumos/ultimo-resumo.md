@@ -1,20 +1,19 @@
 # Resumo diário — conversas Telegram
 
-Data/hora da coleta: 2026-03-25 00:00 (America/Sao_Paulo)
+Data/hora da coleta: 2026-03-25 06:00 (America/Sao_Paulo)
 Sessão analisada: `agent:main:main` (origem Telegram `telegram:8004185123`)
-Janela nova analisada: após o resumo anterior (2026-02-24 12:00)
+Janela nova analisada: após o resumo anterior (2026-03-25 00:00)
 
 ## Principais decisões
-- Evolução do **projeto-canva-bot** para painel mais profissional (estilo SaaS), com login, projetos, fila, histórico e KPIs.
-- Adição de perfis de usuário (**admin/editor**) e persistência de histórico em arquivo.
-- Simplificação do uso com **fluxo 1-clique** (tema + URL do Canva) para reduzir fricção operacional.
-- Usuário forneceu um link fixo de design Canva e já começou a usar com tema prático (“Cinto de segurança atrás”).
+- No fluxo do Canva, o usuário definiu que **Mídia Mágica deve ser em “Vídeos”** (não imagens).
+- O formato do conteúdo deve seguir o template de demonstração: **texto quebrado por partes com animação** e **narração segmentada/cortada por bloco**, sincronizada na timeline.
+- Continuidade de execução autônoma foi mantida (usuário confirmou com “ok” para seguir sem pausas longas).
 
 ## Tarefas abertas
-- Implementar opção de **salvar URL fixa de template** no painel para evitar colar link manualmente em cada execução.
-- Validar o fluxo 1-clique em uso real completo (geração + automação + etapa final de export).
+- Finalizar a montagem no Canva exatamente no padrão pedido (vídeos + texto animado por blocos + voz cortada/sincronizada).
+- Validar resultado final pronto para exportação após a sincronização completa dos blocos.
 
 ## Preferências do usuário observadas
-- Prefere que o sistema fique cada vez mais simples de operar, pedindo explicitamente “adicione para ficar mais fácil”.
-- Valoriza fluxo com poucos campos e ação direta (ideal: preenchimento mínimo + execução imediata).
-- Responde bem a instruções curtas, prontas para execução, com foco em resultado rápido.
+- Em produção de vídeos no Canva, prefere direção **bem específica e replicável** (seguir referência do template existente).
+- Prefere que a execução avance com checkpoints curtos, sem re-explicar tudo a cada etapa.
+- Valoriza consistência de padrão visual/edição (mesma lógica de cortes e encaixe do vídeo-base).

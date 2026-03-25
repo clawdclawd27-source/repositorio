@@ -14,3 +14,4 @@
 - Em fluxos com bloqueio de acesso/permissão, prefere que eu avance até o limite e deixe para ele só a ação final necessária (ex.: clique/aceite), sem travar o progresso.
 - Quando possível, prefere automação completa sem cliques manuais dele; para rotinas de verificação, aprova modelo de alerta apenas em falha (silêncio quando está tudo ok).
 - Em ferramentas operacionais, costuma pedir simplificação contínua do fluxo ("deixar mais fácil"), priorizando experiência 1-clique com mínimo de campos.
+- Em edição de vídeo no Canva, quando há template de referência, prefere replicar o padrão exato (Mídia Mágica em vídeo, texto em blocos animados e narração segmentada/sincronizada por trecho).
