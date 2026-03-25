@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canva Bot Studio</title>
+    <style>
+      :root { --bg:#0b1020; --card:#121a31; --line:#263252; --text:#ecf1ff; --muted:#aab7db; --acc:#7c3aed; }
+      *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:var(--bg);color:var(--text)}
+      .wrap{max-width:980px;margin:40px auto;padding:0 16px}
+      h1{margin:0 0 6px} p{margin:0;color:var(--muted)}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+      .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+      label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+      input,textarea{width:100%;background:#0f1730;border:1px solid #2a375d;color:var(--text);padding:10px;border-radius:10px}
+      button{margin-top:12px;background:var(--acc);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+      button:disabled{opacity:.6;cursor:not-allowed}
+      pre{white-space:pre-wrap;background:#0a1229;border:1px solid #243157;border-radius:10px;padding:12px;min-height:170px}
+      .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+      @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Canva Bot Studio</h1>
+      <p>Painel simples e profissional para gerar e automatizar vídeos no Canva.</p>
+
+      <div class="row">
+        <small id="status">Status: carregando...</small>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h3>1) Criar projeto</h3>
+          <label>Tema do vídeo</label>
+          <input id="tema" placeholder="Ex: Fila dupla: pode ou não pode?" />
+          <button id="btnCriar">Gerar roteiro + payload</button>
+        </section>
+
+        <section class="card">
+          <h3>2) Automatizar Canva</h3>
+          <label>Caminho do canva-fill.json</label>
+          <input id="payload" placeholder="output/.../canva-fill.json" />
+          <label>URL do design no Canva</label>
+          <input id="designUrl" placeholder="https://www.canva.com/design/..." />
+          <button id="btnAuto">Executar automação</button>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:16px">
+        <h3>Logs</h3>
+        <pre id="log">Aguardando ação...</pre>
+      </section>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById('status');
+      const logEl = document.getElementById('log');
+      const btnCriar = document.getElementById('btnCriar');
+      const btnAuto = document.getElementById('btnAuto');
+
+      async function refreshStatus(){
+        const r = await fetch('/api/status');
+        const s = await r.json();
+        statusEl.textContent = `Status: ${s.running ? 'executando...' : 'pronto'}`;
+      }
+
+      async function post(url, body){
+        const r = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const data = await r.json();
+        if(!r.ok) throw new Error(data.message || 'Falha');
+        return data;
+      }
+
+      btnCriar.onclick = async () => {
+        try{
+          btnCriar.disabled = true;
+          logEl.textContent = 'Processando criação...';
+          const tema = document.getElementById('tema').value.trim();
+          const out = await post('/api/create',{tema});
+          logEl.textContent = out.log || 'Concluído.';
+        }catch(e){
+          logEl.textContent = `Erro: ${e.message}`;
+        }finally{btnCriar.disabled=false; refreshStatus();}
+      };
+
+      btnAuto.onclick = async () => {
+        try{
+          btnAuto.disabled = true;
+          logEl.textContent = 'Executando automação Canva...';
+          const payload = document.getElementById('payload').value.trim();
+          const designUrl = document.getElementById('designUrl').value.trim();
+          const out = await post('/api/canva-auto',{payload,designUrl});
+          logEl.textContent = out.log || 'Concluído.';
+        }catch(e){
+          logEl.textContent = `Erro: ${e.message}`;
+        }finally{btnAuto.disabled=false; refreshStatus();}
+      };
+
+      refreshStatus();
+      setInterval(refreshStatus, 3000);
+    </script>
+  </body>
+</html>

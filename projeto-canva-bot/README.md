@@ -29,6 +29,17 @@ No menu você escolhe:
 1. Criar novo projeto de vídeo (roteiro + payload)
 2. Preencher template no Canva automaticamente
 
+## Uso (painel web profissional)
+```bash
+npm run web
+```
+Depois abra: `http://localhost:4177`
+
+No painel web você terá botões para:
+- Gerar projeto
+- Rodar automação Canva
+- Acompanhar logs em tempo real
+
 ## Uso direto (opcional)
 ```bash
 npm run criar -- "Fila dupla: pode ou não pode?"
