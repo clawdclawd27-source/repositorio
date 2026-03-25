@@ -59,15 +59,18 @@
 
       <div class="grid">
         <section class="card">
-          <h3>Criar roteiro + payload</h3>
+          <h3>Fluxo 1-clique (recomendado)</h3>
           <input id="tema" placeholder="Tema do vídeo">
-          <button id="btnCriar" style="margin-top:8px">Enfileirar criação</button>
+          <input id="designUrl" placeholder="URL do design no Canva" style="margin-top:8px">
+          <input id="outputNameFast" placeholder="Nome final (ex: video-final.mp4)" style="margin-top:8px">
+          <button id="btnOneClick" style="margin-top:8px">Executar fluxo completo</button>
+          <div class="muted" style="margin-top:8px">Cria roteiro + payload, roda automação Canva e registra exportação.</div>
         </section>
 
         <section class="card">
-          <h3>Automação Canva</h3>
+          <h3>Automação Canva (manual)</h3>
           <input id="payload" placeholder="output/.../canva-fill.json">
-          <input id="designUrl" placeholder="URL do design no Canva" style="margin-top:8px">
+          <input id="designUrlManual" placeholder="URL do design no Canva" style="margin-top:8px">
           <button id="btnAuto" style="margin-top:8px">Enfileirar automação</button>
         </section>
       </div>
@@ -137,7 +140,8 @@ btnLogin.onclick=async()=>{
 
 btnProject.onclick=async()=>{ try{ await api('/api/projects',{method:'POST',headers:authHeaders(),body:JSON.stringify({name:projectName.value.trim(),client:clientName.value.trim()})}); projectName.value=''; clientName.value=''; await loadProjects(); await refresh(); }catch(e){ alert(e.message);} };
 btnCriar.onclick=async()=>{ try{ await api('/api/create',{method:'POST',headers:authHeaders(),body:JSON.stringify({tema:tema.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
-btnAuto.onclick=async()=>{ try{ await api('/api/canva-auto',{method:'POST',headers:authHeaders(),body:JSON.stringify({payload:payload.value.trim(),designUrl:designUrl.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
+btnOneClick.onclick=async()=>{ try{ await api('/api/one-click',{method:'POST',headers:authHeaders(),body:JSON.stringify({tema:tema.value.trim(),designUrl:designUrl.value.trim(),outputName:outputNameFast.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
+btnAuto.onclick=async()=>{ try{ await api('/api/canva-auto',{method:'POST',headers:authHeaders(),body:JSON.stringify({payload:payload.value.trim(),designUrl:designUrlManual.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
 btnExport.onclick=async()=>{ try{ await api('/api/export',{method:'POST',headers:authHeaders(),body:JSON.stringify({outputName:outputName.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
 btnUser.onclick=async()=>{
   try{

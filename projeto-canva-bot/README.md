@@ -39,6 +39,7 @@ No painel web você terá:
 - Login com usuários e perfis (`admin` / `editor`)
 - CRUD básico de usuários (somente admin)
 - Projetos por cliente
+- Fluxo **1-clique** (tema + URL Canva)
 - Fila de jobs
 - Histórico operacional persistido em arquivo
 - KPIs básicos (projetos, jobs OK, jobs com erro)

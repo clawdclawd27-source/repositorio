@@ -106,15 +106,48 @@ function runNodeScript(args = []) {
   });
 }
 
+function extractPayloadPathFromCreateLog(logText = '') {
+  const m = logText.match(/🎬 Payload Canva:\s(.+)/);
+  return m?.[1]?.trim() || null;
+}
+
 async function processNext() {
   if (running || queue.length === 0) return;
   const job = queue.shift();
   running = true;
 
   try {
-    const out = await runNodeScript(job.args);
-    lastLog = out;
-    addHistory({ type: job.type, status: 'ok', projectId: job.projectId || null, by: job.by, input: job.input, log: out.slice(0, 1200) });
+    if (job.type === 'one-click') {
+      const outCreate = await runNodeScript(['src/index.mjs', job.input.tema]);
+      const payloadPath = extractPayloadPathFromCreateLog(outCreate);
+      if (!payloadPath) throw new Error('Não foi possível identificar o canva-fill.json no log de criação.');
+
+      const outCanva = await runNodeScript(['src/canva-auto.mjs', payloadPath, job.input.designUrl]);
+      const exportMsg = `Exportação sugerida: ${job.input.outputName || `video-${Date.now()}.mp4`}`;
+      const comboLog = `${outCreate}\n\n${outCanva}\n\n${exportMsg}`;
+
+      lastLog = comboLog;
+      addHistory({
+        type: 'one-click',
+        status: 'ok',
+        projectId: job.projectId || null,
+        by: job.by,
+        input: job.input,
+        log: comboLog.slice(0, 1200),
+      });
+      addHistory({
+        type: 'export',
+        status: 'pendente-manual',
+        projectId: job.projectId || null,
+        by: job.by,
+        input: { outputName: job.input.outputName || `video-${Date.now()}.mp4` },
+        log: 'Use Canva: Compartilhar > Baixar > MP4 para finalizar o vídeo.',
+      });
+    } else {
+      const out = await runNodeScript(job.args);
+      lastLog = out;
+      addHistory({ type: job.type, status: 'ok', projectId: job.projectId || null, by: job.by, input: job.input, log: out.slice(0, 1200) });
+    }
   } catch (err) {
     lastLog = err.message;
     addHistory({ type: job.type, status: 'erro', projectId: job.projectId || null, by: job.by, input: job.input, log: err.message.slice(0, 1200) });
@@ -217,6 +250,24 @@ app.post('/api/canva-auto', auth, (req, res) => {
   });
   processNext();
   return res.json({ ok: true, queued: queue.length, message: 'Job de automação enfileirado.' });
+});
+
+app.post('/api/one-click', auth, (req, res) => {
+  const tema = String(req.body?.tema || '').trim();
+  const designUrl = String(req.body?.designUrl || '').trim();
+  const outputName = String(req.body?.outputName || '').trim();
+  const projectId = String(req.body?.projectId || '').trim() || null;
+
+  if (!tema || !designUrl) return res.status(400).json({ message: 'Tema e URL do Canva são obrigatórios.' });
+
+  queue.push({
+    type: 'one-click',
+    by: req.session.user,
+    projectId,
+    input: { tema, designUrl, outputName },
+  });
+  processNext();
+  return res.json({ ok: true, queued: queue.length, message: 'Fluxo 1-clique enfileirado.' });
 });
 
 app.post('/api/export', auth, (req, res) => {
