@@ -13,6 +13,7 @@
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     pre{background:#0a1229;border:1px solid #243157;border-radius:8px;padding:10px;max-height:180px;overflow:auto}
     table{width:100%;border-collapse:collapse;font-size:13px} th,td{border-bottom:1px solid #273357;padding:7px;text-align:left}
+    .muted{opacity:.8;font-size:12px}
     @media(max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
@@ -27,12 +28,13 @@
         <div><label>Senha</label><input id="pass" type="password" value="admin123"></div>
       </div>
       <button id="btnLogin" style="margin-top:10px">Entrar</button>
-      <small id="loginMsg"></small>
+      <small id="loginMsg" class="muted"></small>
     </section>
 
     <section id="app" style="display:none">
       <div class="card">
         <strong id="kpis">KPIs: ...</strong>
+        <div class="muted" id="sessionInfo"></div>
       </div>
 
       <div class="grid">
@@ -45,44 +47,54 @@
           <select id="projectSelect"></select>
         </section>
 
+        <section id="adminCard" class="card" style="display:none">
+          <h3>Usuários (admin)</h3>
+          <input id="newUser" placeholder="Novo usuário">
+          <input id="newPass" placeholder="Senha" style="margin-top:8px">
+          <select id="newRole" style="margin-top:8px"><option value="editor">editor</option><option value="admin">admin</option></select>
+          <button id="btnUser" style="margin-top:8px">Criar usuário</button>
+          <pre id="usersLog">Sem dados.</pre>
+        </section>
+      </div>
+
+      <div class="grid">
         <section class="card">
           <h3>Criar roteiro + payload</h3>
           <input id="tema" placeholder="Tema do vídeo">
           <button id="btnCriar" style="margin-top:8px">Enfileirar criação</button>
         </section>
-      </div>
 
-      <div class="grid">
         <section class="card">
           <h3>Automação Canva</h3>
           <input id="payload" placeholder="output/.../canva-fill.json">
           <input id="designUrl" placeholder="URL do design no Canva" style="margin-top:8px">
           <button id="btnAuto" style="margin-top:8px">Enfileirar automação</button>
         </section>
+      </div>
 
+      <div class="grid">
         <section class="card">
           <h3>Exportação</h3>
           <input id="outputName" placeholder="video-final.mp4">
           <button id="btnExport" style="margin-top:8px">Registrar exportação</button>
         </section>
+
+        <section class="card">
+          <h3>Status / Log</h3>
+          <small id="status"></small>
+          <pre id="log"></pre>
+        </section>
       </div>
 
       <section class="card">
-        <h3>Status / Log</h3>
-        <small id="status"></small>
-        <pre id="log"></pre>
-      </section>
-
-      <section class="card">
         <h3>Histórico</h3>
-        <table><thead><tr><th>Data</th><th>Tipo</th><th>Status</th><th>Projeto</th></tr></thead><tbody id="hist"></tbody></table>
+        <table><thead><tr><th>Data</th><th>Tipo</th><th>Status</th><th>Projeto</th><th>Por</th></tr></thead><tbody id="hist"></tbody></table>
       </section>
     </section>
   </div>
 
 <script>
-let token='';
-let projects=[];
+let token=''; let session=null; let projects=[];
 const authHeaders=()=>({ 'Content-Type':'application/json', 'Authorization':'Bearer '+token });
 
 async function api(url,opt={}){
@@ -97,44 +109,41 @@ async function loadProjects(){
   sel.innerHTML=projects.map(p=>`<option value="${p.id}">${p.name}${p.client?` • ${p.client}`:''}</option>`).join('');
 }
 
+async function loadUsers(){
+  if(session?.role!=='admin') return;
+  const d=await api('/api/users',{headers:authHeaders()});
+  usersLog.textContent=JSON.stringify(d.data,null,2);
+}
+
 async function refresh(){
   const s=await api('/api/status',{headers:authHeaders()});
   document.getElementById('status').textContent=`Status: ${s.running?'executando':'pronto'} | Fila: ${s.queued}`;
   document.getElementById('log').textContent=s.lastLog||'';
   document.getElementById('kpis').textContent=`KPIs • Projetos: ${s.kpis.projectCount} | Jobs OK: ${s.kpis.jobsDone} | Jobs erro: ${s.kpis.jobsFailed}`;
+  document.getElementById('sessionInfo').textContent=`Logado como: ${session.user} (${session.role})`;
   const byId=Object.fromEntries(projects.map(p=>[p.id,p.name]));
-  document.getElementById('hist').innerHTML=(s.history||[]).map(h=>`<tr><td>${new Date(h.at).toLocaleString('pt-BR')}</td><td>${h.type}</td><td>${h.status}</td><td>${byId[h.projectId]||'-'}</td></tr>`).join('')||'<tr><td colspan="4">Sem histórico</td></tr>';
+  document.getElementById('hist').innerHTML=(s.history||[]).map(h=>`<tr><td>${new Date(h.at).toLocaleString('pt-BR')}</td><td>${h.type}</td><td>${h.status}</td><td>${byId[h.projectId]||'-'}</td><td>${h.by||'-'}</td></tr>`).join('')||'<tr><td colspan="5">Sem histórico</td></tr>';
 }
 
 btnLogin.onclick=async()=>{
   try{
-    const user=document.getElementById('user').value.trim();
-    const pass=document.getElementById('pass').value.trim();
-    const d=await api('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass})});
-    token=d.token;
+    const d=await api('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:user.value.trim(),pass:pass.value.trim()})});
+    token=d.token; session=d.session;
     loginBox.style.display='none'; app.style.display='block';
-    await loadProjects(); await refresh(); setInterval(refresh,3000);
-  }catch(e){ document.getElementById('loginMsg').textContent='Erro: '+e.message; }
+    if(session.role==='admin') adminCard.style.display='block';
+    await loadProjects(); await loadUsers(); await refresh(); setInterval(refresh,3000);
+  }catch(e){ loginMsg.textContent='Erro: '+e.message; }
 }
 
-btnProject.onclick=async()=>{
+btnProject.onclick=async()=>{ try{ await api('/api/projects',{method:'POST',headers:authHeaders(),body:JSON.stringify({name:projectName.value.trim(),client:clientName.value.trim()})}); projectName.value=''; clientName.value=''; await loadProjects(); await refresh(); }catch(e){ alert(e.message);} };
+btnCriar.onclick=async()=>{ try{ await api('/api/create',{method:'POST',headers:authHeaders(),body:JSON.stringify({tema:tema.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
+btnAuto.onclick=async()=>{ try{ await api('/api/canva-auto',{method:'POST',headers:authHeaders(),body:JSON.stringify({payload:payload.value.trim(),designUrl:designUrl.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
+btnExport.onclick=async()=>{ try{ await api('/api/export',{method:'POST',headers:authHeaders(),body:JSON.stringify({outputName:outputName.value.trim(),projectId:projectSelect.value})}); await refresh(); }catch(e){ alert(e.message);} };
+btnUser.onclick=async()=>{
   try{
-    await api('/api/projects',{method:'POST',headers:authHeaders(),body:JSON.stringify({name:projectName.value.trim(),client:clientName.value.trim()})});
-    projectName.value=''; clientName.value=''; await loadProjects(); await refresh();
+    await api('/api/users',{method:'POST',headers:authHeaders(),body:JSON.stringify({user:newUser.value.trim(),pass:newPass.value.trim(),role:newRole.value})});
+    newUser.value=''; newPass.value=''; await loadUsers();
   }catch(e){ alert(e.message); }
-};
-
-btnCriar.onclick=async()=>{
-  try{ await api('/api/create',{method:'POST',headers:authHeaders(),body:JSON.stringify({tema:tema.value.trim(),projectId:projectSelect.value})}); await refresh(); }
-  catch(e){ alert(e.message); }
-};
-btnAuto.onclick=async()=>{
-  try{ await api('/api/canva-auto',{method:'POST',headers:authHeaders(),body:JSON.stringify({payload:payload.value.trim(),designUrl:designUrl.value.trim(),projectId:projectSelect.value})}); await refresh(); }
-  catch(e){ alert(e.message); }
-};
-btnExport.onclick=async()=>{
-  try{ await api('/api/export',{method:'POST',headers:authHeaders(),body:JSON.stringify({outputName:outputName.value.trim(),projectId:projectSelect.value})}); await refresh(); }
-  catch(e){ alert(e.message); }
 };
 </script>
 </body></html>

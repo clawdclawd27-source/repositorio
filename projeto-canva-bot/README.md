@@ -36,11 +36,16 @@ npm run web
 Depois abra: `http://localhost:4177`
 
 No painel web você terá:
-- Login simples (padrão: `admin` / `admin123`, configurável por env)
+- Login com usuários e perfis (`admin` / `editor`)
+- CRUD básico de usuários (somente admin)
 - Projetos por cliente
 - Fila de jobs
-- Histórico operacional
+- Histórico operacional persistido em arquivo
 - KPIs básicos (projetos, jobs OK, jobs com erro)
+
+Credencial inicial:
+- usuário: `admin`
+- senha: `admin123`
 
 ## Uso direto (opcional)
 ```bash
