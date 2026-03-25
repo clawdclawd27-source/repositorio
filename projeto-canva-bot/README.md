@@ -20,7 +20,16 @@ cd projeto-canva-bot
 npm install
 ```
 
-## Uso
+## Uso (menu simples e profissional)
+```bash
+npm run menu
+```
+
+No menu você escolhe:
+1. Criar novo projeto de vídeo (roteiro + payload)
+2. Preencher template no Canva automaticamente
+
+## Uso direto (opcional)
 ```bash
 npm run criar -- "Fila dupla: pode ou não pode?"
 ```

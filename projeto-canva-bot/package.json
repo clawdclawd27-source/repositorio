@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "menu": "node src/menu.mjs",
     "criar": "node src/index.mjs",
     "demo": "node src/index.mjs \"Fila dupla: pode ou não pode?\"",
     "canva:auto": "node src/canva-auto.mjs"
